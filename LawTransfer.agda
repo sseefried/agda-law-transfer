@@ -29,6 +29,18 @@ record HasInverse {a} (A : Set a) : Set a where
   field
     _⁻¹ : A → A
 
+record HasMonoidOps {a} (A : Set a) : Set a where
+  field
+    hasBinOp    : HasBinOp A
+    hasIdentity : HasIdentity A
+  open HasBinOp    hasBinOp    public
+  open HasIdentity hasIdentity public
+
+--record HasGroupOps {a} (A : Set a) : Set a where
+--  open HasBinOp    public
+--  open HasIdentity public
+--  open HasInverse   public
+
 record HasRingOps {a} (A : Set a) : Set a where
   infixr 26 _+_
   infixr 27 _*_
@@ -40,15 +52,10 @@ record HasRingOps {a} (A : Set a) : Set a where
     1# : A
 
 module LawTransfers (⟦_⟧ : A → B) (_≈′_ : Rel B ℓ) where
-
   open import Algebra.Definitions
   open import Algebra.Structures
 
-  open Equiv       ⦃ … ⦄ public
-  open HasBinOp    ⦃ … ⦄ public
-  open HasIdentity ⦃ … ⦄ public
-  open HasInverse  ⦃ … ⦄ public
-  open HasRingOps  ⦃ … ⦄ public
+  open Equiv        ⦃ … ⦄ public
 
   instance
     _ : Equiv B
@@ -59,18 +66,38 @@ module LawTransfers (⟦_⟧ : A → B) (_≈′_ : Rel B ℓ) where
             _≈ₛ_  : Rel A ℓ
             x ≈ₛ y = ⟦ x ⟧ ≈ ⟦ y ⟧
 
+  --
+  -- Helper functions
+  --
+
+  IsStructureFromHasBinOp : {x : _} {X : Set x} → ⦃ Equiv X ⦄
+                          → (Rel X _ → Op₂ X → Set (x ⊔ ℓ)) → HasBinOp X → Set _
+  IsStructureFromHasBinOp {x} f o = f _≈_ _∙_
+    where open HasBinOp o
+
+  IsMagmaFromOps : {x : _} {X : Set x} → ⦃ Equiv X ⦄ → HasBinOp X → Set _
+  IsMagmaFromOps {x} = IsStructureFromHasBinOp IsMagma
+
+  IsSemigroupFromOps : {x : _} {X : Set x} → ⦃ Equiv X ⦄ → HasBinOp X → Set _
+  IsSemigroupFromOps {x} = IsStructureFromHasBinOp IsSemigroup
+
+  IsMonoidFromOps : {x : _} {X : Set x} → ⦃ Equiv X ⦄
+                   → HasMonoidOps X → Set _
+  IsMonoidFromOps {x}  o = IsMonoid {x}  _≈_ _∙_ ε
+    where open HasMonoidOps o
+
+  IsRingFromOps : {x : Level} {X : Set x} → ⦃ Equiv X ⦄ → HasRingOps X → Set _
+  IsRingFromOps {x} o  = IsRing {x} _≈_ _+_ _*_ -_ 0#  1#
+    where
+      open HasRingOps o
+
   record MagmaLawTransfer
-           (_∙₁_ : Op₂ A)
-           (_∙₂_ : Op₂ B)
-           ⦃ isMagmaB : IsMagma {b} _≈_ _∙₂_ ⦄ : Set (a ⊔ ℓ) where
+           ⦃ hasBinOpA : HasBinOp A ⦄
+           ⦃ hasBinOpB : HasBinOp B ⦄
+           ⦃ isMagmaB : IsMagmaFromOps hasBinOpB ⦄ : Set (a ⊔ ℓ) where
 
+    open HasBinOp ⦃ … ⦄
     open IsMagma ⦃ … ⦄ -- brings into scope 'isEquivalence' and '∙-cong'
-
-    instance
-      _ : HasBinOp A
-      _ = record { _∙_ = _∙₁_ }
-      _ : HasBinOp B
-      _ = record { _∙_ = _∙₂_ }
 
     field
       ∙-homo : ∀ x y → ⟦ x ∙ y ⟧ ≈ ⟦ x ⟧ ∙ ⟦ y ⟧
@@ -96,22 +123,19 @@ module LawTransfers (⟦_⟧ : A → B) (_≈′_ : Rel B ℓ) where
           ∎
 
   record SemigroupLawTransfer
-           (_∙₁_ : Op₂ A)
-           (_∙₂_ : Op₂ B)
-           ⦃ isSemigroupB : IsSemigroup _≈_ _∙₂_ ⦄ : Set (a ⊔ ℓ) where
+           ⦃ hasBinOpA : HasBinOp A ⦄
+           ⦃ hasBinOpB : HasBinOp B ⦄
+           ⦃ isSemigroupB : IsSemigroupFromOps hasBinOpB ⦄ : Set (a ⊔ ℓ) where
 
+    open HasBinOp ⦃ … ⦄
     open IsSemigroup ⦃ … ⦄ -- brings into scope 'isMagma' and 'assoc'
 
     instance
-      _ : HasBinOp A
-      _ = record { _∙_ = _∙₁_ }
-      _ : HasBinOp B
-      _ = record { _∙_ = _∙₂_ }
       _ : IsMagma {b} _≈_ _∙_
       _ = isMagma
 
     field
-      magmaLawTransfer : MagmaLawTransfer _∙_ _∙_
+      magmaLawTransfer : MagmaLawTransfer
 
     -- brings record fields '∙-homo' and 'isMagma-trans' into
     -- scope and re-exports them
@@ -143,28 +167,27 @@ module LawTransfers (⟦_⟧ : A → B) (_≈′_ : Rel B ℓ) where
           ∎
 
   record MonoidLawTransfer
-           (_∙₁_ : Op₂ A)
-           (ε₁ : A)
-           (_∙₂_ : Op₂ B)
-           (ε₂ : B)
-           ⦃ isMonoidB : IsMonoid _≈_ _∙₂_ ε₂ ⦄ : Set (a ⊔ ℓ) where
+           ⦃ hasMonoidOpsA : HasMonoidOps A ⦄
+           ⦃ hasMonoidOpsB : HasMonoidOps B ⦄
+           ⦃ isMonoidB : IsMonoidFromOps hasMonoidOpsB ⦄ : Set (a ⊔ ℓ) where
 
+    open HasMonoidOps ⦃ … ⦄
     open IsMonoid ⦃ … ⦄
 
     instance
       _ : HasBinOp A
-      _ = record { _∙_ = _∙₁_ }
-      _ : HasIdentity A
-      _ = record { ε = ε₁ }
+      _ = HasMonoidOps.hasBinOp hasMonoidOpsA
       _ : HasBinOp B
-      _ = record { _∙_ = _∙₂_ }
+      _ = HasMonoidOps.hasBinOp hasMonoidOpsB
+      _ : HasIdentity A
+      _ = HasMonoidOps.hasIdentity hasMonoidOpsA
       _ : HasIdentity B
-      _ = record { ε = ε₂ }
+      _ = HasMonoidOps.hasIdentity hasMonoidOpsB
       _ : IsSemigroup {b} _≈_ _∙_
       _ = isSemigroup
 
     field
-      semigroupLawTransfer : SemigroupLawTransfer _∙₁_ _∙₂_
+      semigroupLawTransfer : SemigroupLawTransfer
       ε-homo : ⟦ ε ⟧ ≈ ε
 
 
@@ -213,26 +236,24 @@ module LawTransfers (⟦_⟧ : A → B) (_≈′_ : Rel B ℓ) where
            (_₂⁻¹ : Op₁ B)
            ⦃ isGroupB : IsGroup {b} _≈_ _∙₂_ ε₂ _₂⁻¹ ⦄ : Set (a ⊔ ℓ) where
 
+    open HasMonoidOps ⦃ … ⦄
+    open HasInverse ⦃ … ⦄
     open IsGroup ⦃ … ⦄
 
     instance
-      _ : HasBinOp A
-      _ = record { _∙_ = _∙₁_ }
-      _ : HasIdentity A
-      _ = record { ε = ε₁ }
+      _ : HasMonoidOps A
+      _ = record { hasBinOp = record { _∙_ = _∙₁_} ; hasIdentity = record { ε = ε₁} }
+      _ : HasMonoidOps B
+      _ = record { hasBinOp = record { _∙_ = _∙₂_} ; hasIdentity = record { ε = ε₂} }
       _ : HasInverse A
       _ = record { _⁻¹ = _₁⁻¹ }
-      _ : HasBinOp B
-      _ = record { _∙_ = _∙₂_ }
-      _ : HasIdentity B
-      _ = record { ε = ε₂ }
       _ : HasInverse B
       _ = record { _⁻¹ = _₂⁻¹ }
       _ : IsMonoid {b} _≈_ _∙_ ε
       _ = isMonoid
 
     field
-      monoidLawTransfer : MonoidLawTransfer _∙₁_ ε₁ _∙₂_ ε₂
+      monoidLawTransfer : MonoidLawTransfer
       ⁻¹-homo : ∀ x → ⟦ x ⁻¹ ⟧ ≈ ⟦ x ⟧ ⁻¹
 
     open MonoidLawTransfer monoidLawTransfer public
@@ -296,6 +317,9 @@ module LawTransfers (⟦_⟧ : A → B) (_≈′_ : Rel B ℓ) where
            (_₂⁻¹ : Op₁ B)
            ⦃ isAbelianGroupB : IsAbelianGroup _≈_ _∙₂_ ε₂ _₂⁻¹ ⦄ : Set (a ⊔ ℓ) where
 
+    open HasBinOp ⦃ … ⦄
+    open HasIdentity ⦃ … ⦄
+    open HasInverse ⦃ … ⦄
     open IsAbelianGroup ⦃ … ⦄
 
     instance
@@ -340,15 +364,11 @@ module LawTransfers (⟦_⟧ : A → B) (_≈′_ : Rel B ℓ) where
             ⟦ y ∙ x ⟧
           ∎
 
-  IsRingFromOps : {x : Level} {X : Set x} → ⦃ Equiv X ⦄ → HasRingOps X → Set _
-  IsRingFromOps {x} o  = IsRing {x} _≈_ (_+_ o) (_*_ o) (-_ o) (0# o) (1# o)
-    where
-      open HasRingOps o
-
   record RingLawTransfer
            (hasRingOpsA : HasRingOps A)
            (hasRingOpsB : HasRingOps B)
            ⦃ isRingB : IsRingFromOps hasRingOpsB ⦄ : Set (a ⊔ ℓ) where
+    open HasRingOps ⦃ … ⦄
     open IsRing ⦃ … ⦄
 
     instance
@@ -356,6 +376,10 @@ module LawTransfers (⟦_⟧ : A → B) (_≈′_ : Rel B ℓ) where
       _ = hasRingOpsA
       _ : HasRingOps B
       _ = hasRingOpsB
+      _ : HasMonoidOps A -- FIXME:
+      _ = record { hasBinOp = record { _∙_ = _*_ } ; hasIdentity = record { ε = 1# } }
+      _ : HasMonoidOps B -- FIXME:
+      _ = record { hasBinOp = record { _∙_ = _*_ } ; hasIdentity = record { ε = 1# } }
       _ : IsAbelianGroup {b} _≈_ _+_ 0# (-_)
       _ = +-isAbelianGroup
       _ : IsMonoid {b} _≈_ _*_ 1#
@@ -363,7 +387,7 @@ module LawTransfers (⟦_⟧ : A → B) (_≈′_ : Rel B ℓ) where
 
     field
       +-abelianGroupLawTransfer : AbelianGroupLawTransfer (_+_) 0# (-_) _+_ 0# (-_)
-      *-monoidLawTransfer : MonoidLawTransfer _*_ 1# _*_ 1#
+      *-monoidLawTransfer : MonoidLawTransfer
 
     open AbelianGroupLawTransfer +-abelianGroupLawTransfer public
       renaming
