@@ -106,24 +106,24 @@ module LawTransfers (⟦_⟧ : A → B) (_≈′_ : Rel B ℓ) where
   -- Helper functions
   --
 
-  IsStructureFromHasBinOp : {x : _} {X : Set x} → ⦃ Equiv X ⦄
-                          → (Rel X _ → Op₂ X → Set (x ⊔ ℓ)) → HasBinOp X → Set _
-  IsStructureFromHasBinOp {x} f o = f _≈_ _∙_
+  IsStructureFromHasBinOp : {a : _} {A : Set a} → ⦃ Equiv A ⦄
+                          → (Rel A _ → Op₂ A → Set (a ⊔ ℓ)) → HasBinOp A → Set _
+  IsStructureFromHasBinOp {a} f o = f _≈_ _∙_
     where open HasBinOp o
 
-  IsMagmaFromOps : {x : _} {X : Set x} → ⦃ Equiv X ⦄ → HasBinOp X → Set _
-  IsMagmaFromOps {x} = IsStructureFromHasBinOp IsMagma
+  IsMagmaFromOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄ → HasBinOp A → Set _
+  IsMagmaFromOps {a} = IsStructureFromHasBinOp IsMagma
 
-  IsSemigroupFromOps : {x : _} {X : Set x} → ⦃ Equiv X ⦄ → HasBinOp X → Set _
-  IsSemigroupFromOps {x} = IsStructureFromHasBinOp IsSemigroup
+  IsSemigroupFromOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄ → HasBinOp A → Set _
+  IsSemigroupFromOps {a} = IsStructureFromHasBinOp IsSemigroup
 
-  IsMonoidFromOps : {x : _} {X : Set x} → ⦃ Equiv X ⦄
-                   → HasMonoidOps X → Set _
-  IsMonoidFromOps {x}  o = IsMonoid {x}  _≈_ _∙_ ε
+  IsMonoidFromOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄
+                   → HasMonoidOps A → Set _
+  IsMonoidFromOps {a}  o = IsMonoid {a}  _≈_ _∙_ ε
     where open HasMonoidOps o
 
-  IsRingFromOps : {x : Level} {X : Set x} → ⦃ Equiv X ⦄ → HasRingOps X → Set _
-  IsRingFromOps {x} o = IsRing {x} _≈_ _+_ _*_ -_ 0#  1#
+  IsRingFromOps : {a : Level} {A : Set a} → ⦃ Equiv A ⦄ → HasRingOps A → Set _
+  IsRingFromOps {a} o = IsRing {a} _≈_ _+_ _*_ -_ 0#  1#
     where open HasRingOps o
 
   IsGroupFromOps : {a : Level} {A : Set a} → ⦃ Equiv A ⦄ → HasGroupOps A → Set _
