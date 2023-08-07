@@ -36,12 +36,26 @@ record HasMonoidOps {a} (A : Set a) : Set a where
   open HasBinOp    hasBinOp    public
   open HasIdentity hasIdentity public
 
+  instance -- methods must be named to be re-exported
+    hasBinOpFromMonoid : HasBinOp A
+    hasBinOpFromMonoid = hasBinOp
+
+    hasIdentityFromMonoid : HasIdentity A
+    hasIdentityFromMonoid = hasIdentity
+
 record HasGroupOps {a} (A : Set a) : Set a where
   field
     hasMonoidOps : HasMonoidOps A
     hasInverse  : HasInverse A
   open HasMonoidOps hasMonoidOps public
-  open HasInverse hasInverse  public
+  open HasInverse   hasInverse   public
+
+  instance -- methods must be named to be re-exported
+    hasMonoidOpsFromGroup : HasMonoidOps A
+    hasMonoidOpsFromGroup = hasMonoidOps
+
+    hasInverseFromGroup : HasInverse A
+    hasInverseFromGroup = hasInverse
 
 record HasRingOps {a} (A : Set a) : Set a where
   infixr 26 _+_
@@ -68,7 +82,11 @@ record HasRingOps {a} (A : Set a) : Set a where
             }
       ; hasInverse = record { _⁻¹ = -_ }
       }
-
+  instance
+    hasMonoidOpsFromRing : HasMonoidOps A
+    hasMonoidOpsFromRing = hasMonoidOps
+    hasGroupOpsFromRing : HasGroupOps A
+    hasGroupOpsFromRing = hasGroupOps
 
 module LawTransfers (⟦_⟧ : A → B) (_≈′_ : Rel B ℓ) where
   open import Algebra.Definitions
@@ -202,14 +220,6 @@ module LawTransfers (⟦_⟧ : A → B) (_≈′_ : Rel B ℓ) where
     open IsMonoid ⦃ … ⦄
 
     instance
-      _ : HasBinOp A     -- FIXME
-      _ = hasBinOp
-      _ : HasBinOp B     -- FIXME
-      _ = hasBinOp
-      _ : HasIdentity A  -- FIXME
-      _ = hasIdentity
-      _ : HasIdentity B  -- FIXME
-      _ = hasIdentity
       _ : IsSemigroup {b} _≈_ _∙_
       _ = isSemigroup
 
@@ -262,14 +272,6 @@ module LawTransfers (⟦_⟧ : A → B) (_≈′_ : Rel B ℓ) where
     open IsGroup ⦃ … ⦄
 
     instance
-      _ : HasMonoidOps A  -- FIXME
-      _ = hasMonoidOps
-      _ : HasMonoidOps B  -- FIXME
-      _ = hasMonoidOps
-      _ : HasInverse A    -- FIXME
-      _ = hasInverse
-      _ : HasInverse B    -- FIXME
-      _ = hasInverse
       _ : IsMonoid {b} _≈_ _∙_ ε
       _ = isMonoid
 
@@ -375,14 +377,6 @@ module LawTransfers (⟦_⟧ : A → B) (_≈′_ : Rel B ℓ) where
     open IsRing ⦃ … ⦄
 
     instance
-      _ : HasMonoidOps A   -- FIXME
-      _ = hasMonoidOps
-      _ : HasMonoidOps B   -- FIXME
-      _ = hasMonoidOps
-      _ : HasGroupOps A    -- FIXME
-      _ = hasGroupOps
-      _ : HasGroupOps B    -- FIXME
-      _ = hasGroupOps
       _ : IsAbelianGroup {b} _≈_ _+_ 0# (-_)
       _ = +-isAbelianGroup
       _ : IsMonoid {b} _≈_ _*_ 1#
