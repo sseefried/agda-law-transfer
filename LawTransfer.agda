@@ -402,6 +402,7 @@ record RingLawTransfer
     ; isAbelianGroup-trans    to +-isAbelianGroup-trans
     )
   open MonoidLawTransfer *-monoidLawTransfer public
+    using ()
     renaming
     ( ∙-homo                  to *-homo
     ; ε-homo                  to 1#-homo
@@ -412,16 +413,30 @@ record RingLawTransfer
     ; isMonoid-trans          to *-isMonoid-trans
     )
 
+  open IsMonoid *-isMonoid-trans
+    using ()
+    renaming
+    ( ∙-cong                  to *-cong′
+    ; assoc                   to *-assoc′
+    ; identity                to *-identity′
+    )
+
   isRing-trans : IsRingFromOps hasRingOpsA
   isRing-trans =
     record
       { +-isAbelianGroup = +-isAbelianGroup-trans
-      ; *-isMonoid       = *-isMonoid-trans
+      ; *-cong           = *-cong′
+      ; *-assoc          = *-assoc′
+      ; *-identity       = *-identity′
       ; distrib          = distributionˡ , distributionʳ
       ; zero             = zˡ , zʳ
       }
     where
       open import Relation.Binary.Reasoning.Setoid (setoid)
+
+
+      isMonoid : IsMonoid _≈_ _*_ 1#
+      isMonoid = *-isMonoid-trans
 
       distributionˡ : ∀ x y z → x * (y + z) ≈ x * y + x * z
       distributionˡ x y z =
