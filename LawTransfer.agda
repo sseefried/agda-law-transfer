@@ -413,7 +413,7 @@ record RingLawTransfer
     ; isMonoid-trans          to *-isMonoid-trans
     )
 
-  open IsMonoid *-isMonoid-trans
+  open IsMonoid *-isMonoid-trans -- not public
     using ()
     renaming
     ( ∙-cong                  to *-cong′
