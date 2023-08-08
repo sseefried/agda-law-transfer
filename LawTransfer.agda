@@ -115,6 +115,12 @@ IsStructureFromHasBinOp {a} f o = f _≈_ _∙_
 IsMagmaFromOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄ → HasBinOp A → Set _
 IsMagmaFromOps {a} = IsStructureFromHasBinOp IsMagma
 
+IsCommutativeMagmaFromOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄ → HasBinOp A → Set _
+IsCommutativeMagmaFromOps {a} = IsStructureFromHasBinOp IsCommutativeMagma
+
+IsIdempotentMagmaFromOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄ → HasBinOp A → Set _
+IsIdempotentMagmaFromOps {a} = IsStructureFromHasBinOp IsIdempotentMagma
+
 IsSemigroupFromOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄ → HasBinOp A → Set _
 IsSemigroupFromOps {a} = IsStructureFromHasBinOp IsSemigroup
 
@@ -167,6 +173,76 @@ record MagmaLawTransfer
         ≈⟨ sym (∙-homo y v) ⟩
           ⟦ y ∙ v ⟧
         ∎
+
+record CommutativeMagmaLawTransfer
+         ⦃ hasBinOpA : HasBinOp A ⦄
+         ⦃ hasBinOpB : HasBinOp B ⦄
+         ⦃ isCommutativeMagmaB : IsCommutativeMagmaFromOps hasBinOpB ⦄ : Set (a ⊔ ℓ) where
+  open HasBinOp ⦃ … ⦄
+  open IsCommutativeMagma ⦃ … ⦄
+
+  instance
+    _ : IsMagma {b} _≈_ _∙_
+    _ = isMagma
+
+  field
+    magmaLawTransfer : MagmaLawTransfer
+
+  open MagmaLawTransfer magmaLawTransfer public
+
+  isCommutativeMagma-trans : IsCommutativeMagma {a} _≈_ _∙_
+  isCommutativeMagma-trans =
+    record
+      { isMagma = isMagma-trans
+      ; comm = ∙-comm
+      }
+   where
+     open import Relation.Binary.Reasoning.Setoid (setoid)
+     ∙-comm : Commutative _≈_ _∙_
+     ∙-comm x y =
+       begin
+         ⟦ x ∙ y ⟧
+       ≈⟨ ∙-homo x y ⟩
+         ⟦ x ⟧ ∙ ⟦ y ⟧
+       ≈⟨ comm ⟦ x ⟧ ⟦ y ⟧ ⟩
+         ⟦ y ⟧ ∙ ⟦ x ⟧
+       ≈⟨ sym (∙-homo y x) ⟩
+         ⟦ y ∙ x ⟧
+       ∎
+
+record IdempotentMagmaLawTransfer
+         ⦃ hasBinOpA : HasBinOp A ⦄
+         ⦃ hasBinOpB : HasBinOp B ⦄
+         ⦃ isIdempotentMagmaB : IsIdempotentMagmaFromOps hasBinOpB ⦄ : Set (a ⊔ ℓ) where
+  open HasBinOp ⦃ … ⦄
+  open IsIdempotentMagma ⦃ … ⦄
+
+  instance
+    _ : IsMagma {b} _≈_ _∙_
+    _ = isMagma
+
+  field
+    magmaLawTransfer : MagmaLawTransfer
+
+  open MagmaLawTransfer magmaLawTransfer public
+
+  isIdempotentMagma-trans : IsIdempotentMagma {a} _≈_ _∙_
+  isIdempotentMagma-trans =
+    record
+      { isMagma = isMagma-trans
+      ; idem = ∙-idem
+      }
+   where
+     open import Relation.Binary.Reasoning.Setoid (setoid)
+     ∙-idem : Idempotent _≈_ _∙_
+     ∙-idem x =
+       begin
+         ⟦ x ∙ x ⟧
+       ≈⟨ ∙-homo x x ⟩
+         ⟦ x ⟧ ∙ ⟦ x ⟧
+       ≈⟨ idem ⟦ x ⟧ ⟩
+         ⟦ x ⟧
+       ∎
 
 record SemigroupLawTransfer
          ⦃ hasBinOpA : HasBinOp A ⦄
