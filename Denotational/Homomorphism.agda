@@ -6,7 +6,7 @@ open import Level using (Level ; _⊔_ ; suc)
 open import Relation.Binary.Core using (Rel)
 open import Algebra.Core using (Op₁ ; Op₂)
 
-module LawTransfer
+module Denotational.Homomorphism
   {a b} {ℓ} {A : Set a} {B : Set b}
   (⟦_⟧ : A → B) (_≈ᴮ_ : Rel B ℓ)
   where
@@ -102,7 +102,6 @@ instance
         where
           _≈ᴬ_  : Rel A ℓ
           x ≈ᴬ y = ⟦ x ⟧ ≈ ⟦ y ⟧
-
 --
 -- Helper functions
 --
@@ -143,13 +142,13 @@ IsAbelianGroupFromOps {a} o = IsAbelianGroup {a} _≈_ _∙_ ε _⁻¹
   where
     open HasGroupOps o
 
-record MagmaLawTransfer
+record IsMagmaHomomorphism
          ⦃ hasBinOpA : HasBinOp A ⦄
          ⦃ hasBinOpB : HasBinOp B ⦄
          ⦃ isMagmaB : IsMagmaFromOps hasBinOpB ⦄ : Set (a ⊔ ℓ) where
 
   open HasBinOp ⦃ … ⦄
-  open IsMagma ⦃ … ⦄ -- brings into scope 'isEquivalence' and '∙-cong'
+  open IsMagma ⦃ … ⦄
 
   field
     ∙-homo : ∀ x y → ⟦ x ∙ y ⟧ ≈ ⟦ x ⟧ ∙ ⟦ y ⟧
@@ -174,7 +173,7 @@ record MagmaLawTransfer
           ⟦ y ∙ v ⟧
         ∎
 
-record CommutativeMagmaLawTransfer
+record IsCommutativeMagmaHomomorphism
          ⦃ hasBinOpA : HasBinOp A ⦄
          ⦃ hasBinOpB : HasBinOp B ⦄
          ⦃ isCommutativeMagmaB : IsCommutativeMagmaFromOps hasBinOpB ⦄ : Set (a ⊔ ℓ) where
@@ -186,9 +185,9 @@ record CommutativeMagmaLawTransfer
     _ = isMagma
 
   field
-    magmaLawTransfer : MagmaLawTransfer
+    isMagmaHomomorphism : IsMagmaHomomorphism
 
-  open MagmaLawTransfer magmaLawTransfer public
+  open IsMagmaHomomorphism isMagmaHomomorphism public
 
   isCommutativeMagma-trans : IsCommutativeMagma {a} _≈_ _∙_
   isCommutativeMagma-trans =
@@ -210,7 +209,7 @@ record CommutativeMagmaLawTransfer
          ⟦ y ∙ x ⟧
        ∎
 
-record IdempotentMagmaLawTransfer
+record IsIdempotentMagmaHomomorphism
          ⦃ hasBinOpA : HasBinOp A ⦄
          ⦃ hasBinOpB : HasBinOp B ⦄
          ⦃ isIdempotentMagmaB : IsIdempotentMagmaFromOps hasBinOpB ⦄ : Set (a ⊔ ℓ) where
@@ -222,9 +221,9 @@ record IdempotentMagmaLawTransfer
     _ = isMagma
 
   field
-    magmaLawTransfer : MagmaLawTransfer
+    isMagmaHomomorphism : IsMagmaHomomorphism
 
-  open MagmaLawTransfer magmaLawTransfer public
+  open IsMagmaHomomorphism isMagmaHomomorphism public
 
   isIdempotentMagma-trans : IsIdempotentMagma {a} _≈_ _∙_
   isIdempotentMagma-trans =
@@ -244,7 +243,7 @@ record IdempotentMagmaLawTransfer
          ⟦ x ⟧
        ∎
 
-record SemigroupLawTransfer
+record IsSemigroupHomomorphism
          ⦃ hasBinOpA : HasBinOp A ⦄
          ⦃ hasBinOpB : HasBinOp B ⦄
          ⦃ isSemigroupB : IsSemigroupFromOps hasBinOpB ⦄ : Set (a ⊔ ℓ) where
@@ -257,11 +256,11 @@ record SemigroupLawTransfer
     _ = isMagma
 
   field
-    magmaLawTransfer : MagmaLawTransfer
+    isMagmaHomomorphism : IsMagmaHomomorphism
 
   -- brings record fields '∙-homo' and 'isMagma-trans' into
   -- scope and re-exports them
-  open MagmaLawTransfer magmaLawTransfer public
+  open IsMagmaHomomorphism isMagmaHomomorphism public
 
   isSemigroup-trans : IsSemigroup {a} _≈_ _∙_
   isSemigroup-trans =
@@ -288,7 +287,7 @@ record SemigroupLawTransfer
           ⟦ x ∙ (y ∙ z) ⟧
         ∎
 
-record MonoidLawTransfer
+record IsMonoidHomomorphism
          ⦃ hasMonoidOpsA : HasMonoidOps A ⦄
          ⦃ hasMonoidOpsB : HasMonoidOps B ⦄
          ⦃ isMonoidB : IsMonoidFromOps hasMonoidOpsB ⦄ : Set (a ⊔ ℓ) where
@@ -301,11 +300,11 @@ record MonoidLawTransfer
     _ = isSemigroup
 
   field
-    semigroupLawTransfer : SemigroupLawTransfer
+    isSemigroupHomomorphism : IsSemigroupHomomorphism
     ε-homo : ⟦ ε ⟧ ≈ ε
 
   -- Bring record fields into scope and re-export them
-  open SemigroupLawTransfer semigroupLawTransfer public
+  open IsSemigroupHomomorphism isSemigroupHomomorphism public
 
   isMonoid-trans : IsMonoid {a} _≈_ _∙_ ε
   isMonoid-trans =
@@ -340,7 +339,7 @@ record MonoidLawTransfer
           ⟦ x ⟧
         ∎
 
-record GroupLawTransfer
+record IsGroupHomomorphism
          ⦃ hasGroupOpsA : HasGroupOps A ⦄
          ⦃ hasGroupOpsB : HasGroupOps B ⦄
          ⦃ isGroupB : IsGroupFromOps hasGroupOpsB ⦄ : Set (a ⊔ ℓ) where
@@ -353,10 +352,10 @@ record GroupLawTransfer
     _ = isMonoid
 
   field
-    monoidLawTransfer : MonoidLawTransfer
+    isMonoidHomomorphism : IsMonoidHomomorphism
     ⁻¹-homo : ∀ x → ⟦ x ⁻¹ ⟧ ≈ ⟦ x ⟧ ⁻¹
 
-  open MonoidLawTransfer monoidLawTransfer public
+  open IsMonoidHomomorphism isMonoidHomomorphism public
 
   isGroup-trans : IsGroup {a} _≈_ _∙_ ε _⁻¹
   isGroup-trans =
@@ -408,7 +407,7 @@ record GroupLawTransfer
           ⟦ u ⁻¹ ⟧
         ∎
 
-record AbelianGroupLawTransfer
+record IsAbelianGroupHomomorphism
          ⦃ hasGroupOpsA : HasGroupOps A ⦄
          ⦃ hasGroupOpsB : HasGroupOps B ⦄
          ⦃ isAbelianGroupB : IsAbelianGroupFromOps hasGroupOpsB ⦄ : Set (a ⊔ ℓ) where
@@ -421,9 +420,9 @@ record AbelianGroupLawTransfer
     _ = isGroup
 
   field
-    groupLawTransfer : GroupLawTransfer
+    isgroupHomomorphism : IsGroupHomomorphism
 
-  open GroupLawTransfer groupLawTransfer public
+  open IsGroupHomomorphism isgroupHomomorphism public
 
   isAbelianGroup-trans : IsAbelianGroup _≈_ _∙_ ε _⁻¹
   isAbelianGroup-trans =
@@ -446,7 +445,7 @@ record AbelianGroupLawTransfer
           ⟦ y ∙ x ⟧
         ∎
 
-record RingLawTransfer
+record IsRingHomomorphism
          ⦃ hasRingOpsA : HasRingOps A ⦄
          ⦃ hasRingOpsB : HasRingOps B ⦄
          ⦃ isRingB : IsRingFromOps hasRingOpsB ⦄ : Set (a ⊔ ℓ) where
@@ -460,41 +459,41 @@ record RingLawTransfer
     _ = *-isMonoid
 
   field
-    +-abelianGroupLawTransfer : AbelianGroupLawTransfer
-    *-monoidLawTransfer : MonoidLawTransfer
+    +-abelianIsGroupHomomorphism : IsAbelianGroupHomomorphism
+    *-isMonoidHomomorphism : IsMonoidHomomorphism
 
-  open AbelianGroupLawTransfer +-abelianGroupLawTransfer public
+  open IsAbelianGroupHomomorphism +-abelianIsGroupHomomorphism public
     renaming
-    ( ∙-homo                  to +-homo
-    ; ε-homo                  to 0#-homo
-    ; ⁻¹-homo                 to [-]-homo -- TODO: Come up with a new name
-    ; magmaLawTransfer        to +-magmaLawTransfer
-    ; semigroupLawTransfer    to +-semigroupLawTransfer
-    ; monoidLawTransfer       to +-monoidLawTransfer
-    ; isMagma-trans           to +-isMagma-trans
-    ; isSemigroup-trans       to +-isSemigroup-trans
-    ; isMonoid-trans          to +-isMonoid-trans
-    ; isGroup-trans           to +-isGroup-trans
-    ; isAbelianGroup-trans    to +-isAbelianGroup-trans
+    ( ∙-homo                   to +-homo
+    ; ε-homo                   to 0#-homo
+    ; ⁻¹-homo                  to [-]-homo -- TODO: Come up with a new name
+    ; isMagmaHomomorphism      to +-isMagmaHomomorphism
+    ; isSemigroupHomomorphism  to +-isSemigroupHomomorphism
+    ; isMonoidHomomorphism     to +-isMonoidHomomorphism
+    ; isMagma-trans            to +-isMagma-trans
+    ; isSemigroup-trans        to +-isSemigroup-trans
+    ; isMonoid-trans           to +-isMonoid-trans
+    ; isGroup-trans            to +-isGroup-trans
+    ; isAbelianGroup-trans     to +-isAbelianGroup-trans
     )
-  open MonoidLawTransfer *-monoidLawTransfer public
+  open IsMonoidHomomorphism *-isMonoidHomomorphism public
     using ()
     renaming
-    ( ∙-homo                  to *-homo
-    ; ε-homo                  to 1#-homo
-    ; magmaLawTransfer        to *-magmaLawTransfer
-    ; semigroupLawTransfer    to *-semigroupLawTransfer
-    ; isMagma-trans           to *-isMagma-trans
-    ; isSemigroup-trans       to *-isSemigroup-trans
-    ; isMonoid-trans          to *-isMonoid-trans
+    ( ∙-homo                   to *-homo
+    ; ε-homo                   to 1#-homo
+    ; isMagmaHomomorphism      to *-isMagmaHomomorphism
+    ; isSemigroupHomomorphism  to *-isSemigroupHomomorphism
+    ; isMagma-trans            to *-isMagma-trans
+    ; isSemigroup-trans        to *-isSemigroup-trans
+    ; isMonoid-trans           to *-isMonoid-trans
     )
 
   open IsMonoid *-isMonoid-trans -- not public
     using ()
     renaming
-    ( ∙-cong                  to *-cong′
-    ; assoc                   to *-assoc′
-    ; identity                to *-identity′
+    ( ∙-cong                   to *-cong′
+    ; assoc                    to *-assoc′
+    ; identity                 to *-identity′
     )
 
   isRing-trans : IsRingFromOps hasRingOpsA
