@@ -106,22 +106,10 @@ instance
 -- Helper functions
 --
 
-IsStructureFromHasBinOp : {a : _} {A : Set a} → ⦃ Equiv A ⦄
+FromHasBinOp : {a : _} {A : Set a} → ⦃ Equiv A ⦄
                         → (Rel A _ → Op₂ A → Set (a ⊔ ℓ)) → HasBinOp A → Set _
-IsStructureFromHasBinOp {a} f o = f _≈_ _∙_
+FromHasBinOp {a} f o = f _≈_ _∙_
   where open HasBinOp o
-
-IsMagmaFromOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄ → HasBinOp A → Set _
-IsMagmaFromOps {a} = IsStructureFromHasBinOp IsMagma
-
-IsCommutativeMagmaFromOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄ → HasBinOp A → Set _
-IsCommutativeMagmaFromOps {a} = IsStructureFromHasBinOp IsCommutativeMagma
-
-IsIdempotentMagmaFromOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄ → HasBinOp A → Set _
-IsIdempotentMagmaFromOps {a} = IsStructureFromHasBinOp IsIdempotentMagma
-
-IsSemigroupFromOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄ → HasBinOp A → Set _
-IsSemigroupFromOps {a} = IsStructureFromHasBinOp IsSemigroup
 
 IsMonoidFromOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄
                  → HasMonoidOps A → Set _
@@ -145,7 +133,7 @@ IsAbelianGroupFromOps {a} o = IsAbelianGroup {a} _≈_ _∙_ ε _⁻¹
 record IsMagmaHomomorphism
          ⦃ hasBinOpA : HasBinOp A ⦄
          ⦃ hasBinOpB : HasBinOp B ⦄
-         ⦃ isMagmaB : IsMagmaFromOps hasBinOpB ⦄ : Set (a ⊔ ℓ) where
+         ⦃ isMagmaB : FromHasBinOp IsMagma hasBinOpB ⦄ : Set (a ⊔ ℓ) where
 
   open HasBinOp ⦃ … ⦄
   open IsMagma ⦃ … ⦄
@@ -176,7 +164,7 @@ record IsMagmaHomomorphism
 record IsCommutativeMagmaHomomorphism
          ⦃ hasBinOpA : HasBinOp A ⦄
          ⦃ hasBinOpB : HasBinOp B ⦄
-         ⦃ isCommutativeMagmaB : IsCommutativeMagmaFromOps hasBinOpB ⦄ : Set (a ⊔ ℓ) where
+         ⦃ isCommutativeMagmaB : FromHasBinOp IsCommutativeMagma hasBinOpB ⦄ : Set (a ⊔ ℓ) where
   open HasBinOp ⦃ … ⦄
   open IsCommutativeMagma ⦃ … ⦄
 
@@ -212,7 +200,7 @@ record IsCommutativeMagmaHomomorphism
 record IsIdempotentMagmaHomomorphism
          ⦃ hasBinOpA : HasBinOp A ⦄
          ⦃ hasBinOpB : HasBinOp B ⦄
-         ⦃ isIdempotentMagmaB : IsIdempotentMagmaFromOps hasBinOpB ⦄ : Set (a ⊔ ℓ) where
+         ⦃ isIdempotentMagmaB : FromHasBinOp IsIdempotentMagma hasBinOpB ⦄ : Set (a ⊔ ℓ) where
   open HasBinOp ⦃ … ⦄
   open IsIdempotentMagma ⦃ … ⦄
 
@@ -243,10 +231,66 @@ record IsIdempotentMagmaHomomorphism
          ⟦ x ⟧
        ∎
 
+record IsAlternativeMagmaHomomorphism
+         ⦃ hasBinOpA : HasBinOp A ⦄
+         ⦃ hasBinOpB : HasBinOp B ⦄
+         ⦃ isIdempotentMagmaB : FromHasBinOp IsAlternativeMagma hasBinOpB ⦄ : Set (a ⊔ ℓ) where
+  open HasBinOp ⦃ … ⦄
+  open IsAlternativeMagma ⦃ … ⦄
+
+  instance
+    _ : IsMagma {b} _≈_ _∙_
+    _ = isMagma
+
+  field
+    isMagmaHomomorphism : IsMagmaHomomorphism
+
+  open IsMagmaHomomorphism isMagmaHomomorphism public
+
+  isAlternativeMagma-trans : IsAlternativeMagma {a} _≈_ _∙_
+  isAlternativeMagma-trans =
+    record
+      { isMagma = isMagma-trans
+      ; alter = altˡ , altʳ
+      }
+   where
+     open import Relation.Binary.Reasoning.Setoid (setoid)
+     altˡ : LeftAlternative _≈_ _∙_
+     altˡ x y =
+       begin
+         ⟦ (x ∙ x) ∙ y ⟧
+       ≈⟨ ∙-homo (x ∙ x) y ⟩
+         ⟦ x ∙ x ⟧ ∙ ⟦ y ⟧
+       ≈⟨ ∙-congʳ (∙-homo x x) ⟩
+         (⟦ x ⟧ ∙ ⟦ x ⟧) ∙ ⟦ y ⟧
+       ≈⟨ alternativeˡ ⟦ x ⟧ ⟦ y ⟧ ⟩
+         ⟦ x ⟧ ∙ (⟦ x ⟧ ∙ ⟦ y ⟧)
+       ≈⟨ ∙-congˡ (sym (∙-homo x  y)) ⟩
+         ⟦ x ⟧ ∙ ⟦ x ∙ y ⟧
+       ≈⟨ sym (∙-homo x (x ∙ y)) ⟩
+         ⟦ x ∙ (x ∙ y) ⟧
+       ∎
+
+     altʳ : RightAlternative _≈_ _∙_
+     altʳ x y =
+       begin
+         ⟦ x ∙ (y ∙ y) ⟧
+       ≈⟨ ∙-homo x (y ∙ y) ⟩
+         ⟦ x ⟧ ∙ ⟦ y ∙ y ⟧
+       ≈⟨ ∙-congˡ (∙-homo y y) ⟩
+         ⟦ x ⟧ ∙ (⟦ y ⟧ ∙ ⟦ y ⟧)
+       ≈⟨ alternativeʳ ⟦ x ⟧ ⟦ y ⟧ ⟩
+         (⟦ x ⟧ ∙ ⟦ y ⟧) ∙ ⟦ y ⟧
+       ≈⟨ ∙-congʳ (sym (∙-homo x y)) ⟩
+         ⟦ x ∙ y ⟧ ∙ ⟦ y ⟧
+       ≈⟨ sym (∙-homo (x ∙ y) y) ⟩
+         ⟦ (x ∙ y) ∙ y ⟧
+       ∎
+
 record IsSemigroupHomomorphism
          ⦃ hasBinOpA : HasBinOp A ⦄
          ⦃ hasBinOpB : HasBinOp B ⦄
-         ⦃ isSemigroupB : IsSemigroupFromOps hasBinOpB ⦄ : Set (a ⊔ ℓ) where
+         ⦃ isSemigroupB : FromHasBinOp IsSemigroup hasBinOpB ⦄ : Set (a ⊔ ℓ) where
 
   open HasBinOp ⦃ … ⦄
   open IsSemigroup ⦃ … ⦄ -- brings into scope 'isMagma' and 'assoc'
