@@ -287,6 +287,188 @@ record IsAlternativeMagmaHomomorphism
          ⟦ (x ∙ y) ∙ y ⟧
        ∎
 
+record IsFlexibleMagmaHomomorphism
+         ⦃ hasBinOpA : HasBinOp A ⦄
+         ⦃ hasBinOpB : HasBinOp B ⦄
+         ⦃ isIdempotentMagmaB : FromHasBinOp IsFlexibleMagma hasBinOpB ⦄ : Set (a ⊔ ℓ) where
+  open HasBinOp ⦃ … ⦄
+  open IsFlexibleMagma ⦃ … ⦄
+
+  instance
+    _ : IsMagma {b} _≈_ _∙_
+    _ = isMagma
+
+  field
+    isMagmaHomomorphism : IsMagmaHomomorphism
+
+  open IsMagmaHomomorphism isMagmaHomomorphism public
+
+  isFlexibleMagma-trans : IsFlexibleMagma {a} _≈_ _∙_
+  isFlexibleMagma-trans =
+    record
+      { isMagma = isMagma-trans
+      ; flex = flexible
+      }
+   where
+     open import Relation.Binary.Reasoning.Setoid (setoid)
+     flexible :  Flexible _≈_ _∙_
+     flexible x y =
+       begin
+         ⟦ (x ∙ y) ∙ x ⟧
+       ≈⟨ ∙-homo (x ∙ y) x ⟩
+         ⟦ x ∙ y ⟧ ∙ ⟦ x ⟧
+       ≈⟨ ∙-congʳ (∙-homo x y) ⟩
+         (⟦ x ⟧ ∙ ⟦ y ⟧) ∙ ⟦ x ⟧
+       ≈⟨ flex ⟦ x ⟧ ⟦ y ⟧ ⟩
+         ⟦ x ⟧ ∙ (⟦ y ⟧ ∙ ⟦ x ⟧)
+       ≈⟨ ∙-congˡ (sym (∙-homo y x)) ⟩
+         ⟦ x ⟧ ∙ ⟦ y ∙ x ⟧
+       ≈⟨ sym (∙-homo x (y ∙ x)) ⟩
+         ⟦ x ∙ (y ∙ x) ⟧
+       ∎
+
+
+record IsMedialMagmaHomomorphism
+         ⦃ hasBinOpA : HasBinOp A ⦄
+         ⦃ hasBinOpB : HasBinOp B ⦄
+         ⦃ isIdempotentMagmaB : FromHasBinOp IsMedialMagma hasBinOpB ⦄ : Set (a ⊔ ℓ) where
+  open HasBinOp ⦃ … ⦄
+  open IsMedialMagma ⦃ … ⦄
+
+  instance
+    _ : IsMagma {b} _≈_ _∙_
+    _ = isMagma
+
+  field
+    isMagmaHomomorphism : IsMagmaHomomorphism
+
+  open IsMagmaHomomorphism isMagmaHomomorphism public
+
+  isMedialMagma-trans : IsMedialMagma {a} _≈_ _∙_
+  isMedialMagma-trans =
+    record
+      { isMagma = isMagma-trans
+      ; medial = ∙-medial
+      }
+   where
+     open import Relation.Binary.Reasoning.Setoid (setoid)
+     ∙-medial :  Medial _≈_ _∙_
+     ∙-medial x y u z =
+       begin
+         ⟦ (x ∙ y) ∙ (u ∙ z) ⟧
+       ≈⟨ ∙-homo (x ∙ y) (u ∙ z) ⟩
+         ⟦ (x ∙ y) ⟧ ∙ (⟦ u ∙ z ⟧)
+       ≈⟨ ∙-cong (∙-homo x y ) (∙-homo u z) ⟩
+         (⟦ x ⟧ ∙ ⟦ y ⟧) ∙ (⟦ u ⟧ ∙ ⟦ z ⟧)
+       ≈⟨ medial ⟦ x ⟧ ⟦ y ⟧ ⟦ u ⟧ ⟦ z ⟧ ⟩
+         (⟦ x ⟧ ∙ ⟦ u ⟧) ∙ (⟦ y ⟧ ∙ ⟦ z ⟧)
+       ≈⟨ sym (∙-cong (∙-homo x u) (∙-homo y z)) ⟩
+         ⟦ x ∙ u ⟧ ∙ ⟦ y ∙ z ⟧
+       ≈⟨ sym (∙-homo (x ∙ u) (y ∙ z)) ⟩
+         ⟦ (x ∙ u) ∙ (y ∙ z) ⟧
+       ∎
+
+record IsSemimedialMagmaHomomorphism
+         ⦃ hasBinOpA : HasBinOp A ⦄
+         ⦃ hasBinOpB : HasBinOp B ⦄
+         ⦃ isIdempotentMagmaB : FromHasBinOp IsSemimedialMagma hasBinOpB ⦄ : Set (a ⊔ ℓ) where
+  open HasBinOp ⦃ … ⦄
+  open IsSemimedialMagma ⦃ … ⦄
+
+  instance
+    _ : IsMagma {b} _≈_ _∙_
+    _ = isMagma
+
+  field
+    isMagmaHomomorphism : IsMagmaHomomorphism
+
+  open IsMagmaHomomorphism isMagmaHomomorphism public
+
+  isSemimedialMagma-trans : IsSemimedialMagma {a} _≈_ _∙_
+  isSemimedialMagma-trans =
+    record
+      { isMagma = isMagma-trans
+      ; semiMedial = ∙-semiMedialˡ , ∙-semiMedialʳ
+      }
+   where
+     open import Relation.Binary.Reasoning.Setoid (setoid)
+     ∙-semiMedialˡ :  LeftSemimedial _≈_ _∙_
+     ∙-semiMedialˡ x y z =
+       begin
+         ⟦ (x ∙ x) ∙ (y ∙ z) ⟧
+       ≈⟨ ∙-homo (x ∙ x) (y ∙ z) ⟩
+         ⟦ (x ∙ x) ⟧ ∙ (⟦ y ∙ z ⟧)
+       ≈⟨ ∙-cong (∙-homo x x ) (∙-homo y z) ⟩
+         (⟦ x ⟧ ∙ ⟦ x ⟧) ∙ (⟦ y ⟧ ∙ ⟦ z ⟧)
+       ≈⟨ semimedialˡ ⟦ x ⟧ ⟦ y ⟧ ⟦ z ⟧ ⟩
+         (⟦ x ⟧ ∙ ⟦ y ⟧) ∙ (⟦ x ⟧ ∙ ⟦ z ⟧)
+       ≈⟨ sym (∙-cong (∙-homo x y) (∙-homo x z)) ⟩
+         ⟦ x ∙ y ⟧ ∙ ⟦ x ∙ z ⟧
+       ≈⟨ sym (∙-homo (x ∙ y) (x ∙ z)) ⟩
+         ⟦ (x ∙ y) ∙ (x ∙ z) ⟧
+       ∎
+
+     ∙-semiMedialʳ :  RightSemimedial _≈_ _∙_
+     ∙-semiMedialʳ x y z =
+       begin
+         ⟦ (y ∙ z) ∙ (x ∙ x) ⟧
+       ≈⟨ ∙-homo (y ∙ z) (x ∙ x) ⟩
+         ⟦ (y ∙ z) ⟧ ∙ (⟦ x ∙ x ⟧)
+       ≈⟨ ∙-cong (∙-homo y z ) (∙-homo x x) ⟩
+         (⟦ y ⟧ ∙ ⟦ z ⟧) ∙ (⟦ x ⟧ ∙ ⟦ x ⟧)
+       ≈⟨ semimedialʳ ⟦ x ⟧ ⟦ y ⟧ ⟦ z ⟧ ⟩
+         (⟦ y ⟧ ∙ ⟦ x ⟧) ∙ (⟦ z ⟧ ∙ ⟦ x ⟧)
+       ≈⟨ sym (∙-cong (∙-homo y x) (∙-homo z x)) ⟩
+         ⟦ y ∙ x ⟧ ∙ ⟦ z ∙ x ⟧
+       ≈⟨ sym (∙-homo (y ∙ x) (z ∙ x)) ⟩
+         ⟦ (y ∙ x) ∙ (z ∙ x) ⟧
+       ∎
+
+record IsSelectiveMagmaHomomorphism
+         ⦃ hasBinOpA : HasBinOp A ⦄
+         ⦃ hasBinOpB : HasBinOp B ⦄
+         ⦃ isIdempotentMagmaB : FromHasBinOp IsSelectiveMagma hasBinOpB ⦄ : Set (a ⊔ ℓ) where
+  open HasBinOp ⦃ … ⦄
+  open IsSelectiveMagma ⦃ … ⦄
+
+  instance
+    _ : IsMagma {b} _≈_ _∙_
+    _ = isMagma
+
+  field
+    isMagmaHomomorphism : IsMagmaHomomorphism
+
+  open import Data.Sum
+
+  open IsMagmaHomomorphism isMagmaHomomorphism public
+
+  isSelectiveMagma-trans : IsSelectiveMagma {a} _≈_ _∙_
+  isSelectiveMagma-trans =
+    record
+      { isMagma = isMagma-trans
+      ; sel     = selective
+      }
+   where
+     open import Relation.Binary.Reasoning.Setoid (setoid)
+     selective : Selective _≈_ _∙_
+     selective x y with sel ⟦ x ⟧ ⟦ y ⟧
+     ... | inj₁ ⟦x⟧∙⟦y⟧≈⟦x⟧ = inj₁ (
+            begin
+              ⟦ x ∙ y ⟧
+            ≈⟨ ∙-homo x y ⟩
+              ⟦ x ⟧ ∙ ⟦ y ⟧
+            ≈⟨ ⟦x⟧∙⟦y⟧≈⟦x⟧ ⟩
+             ⟦ x ⟧
+            ∎)
+     ... | inj₂ ⟦x⟧∙⟦y⟧≈⟦y⟧ = inj₂ (
+            begin
+              ⟦ x ∙ y ⟧
+            ≈⟨ ∙-homo x y ⟩
+              ⟦ x ⟧ ∙ ⟦ y ⟧
+            ≈⟨ ⟦x⟧∙⟦y⟧≈⟦y⟧ ⟩
+             ⟦ y ⟧
+            ∎)
+
 record IsSemigroupHomomorphism
          ⦃ hasBinOpA : HasBinOp A ⦄
          ⦃ hasBinOpB : HasBinOp B ⦄
