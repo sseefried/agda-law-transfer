@@ -592,7 +592,7 @@ record IsCommutativeSemigroupHomomorphism
       ; comm = ∙-comm
       }
 
-isCommutativeMagma-trans : IsCommutativeMagma {a} _≈_ _∙_
+  isCommutativeMagma-trans : IsCommutativeMagma {a} _≈_ _∙_
   isCommutativeMagma-trans =
     record
       { isMagma = isMagma-trans
@@ -705,7 +705,7 @@ record IsMonoidHomomorphism
   isUnitalMagma-trans : IsUnitalMagma {a} _≈_ _∙_ ε
   isUnitalMagma-trans =
     record
-      { isSemigroup = isMagma-trans
+      { isMagma = isMagma-trans
       ; identity = ∙-identityˡ , ∙-identityʳ
       }
 
