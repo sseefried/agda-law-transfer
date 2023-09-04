@@ -116,6 +116,11 @@ IsMonoidFromOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄
 IsMonoidFromOps {a}  o = IsMonoid {a}  _≈_ _∙_ ε
   where open HasMonoidOps o
 
+IsUnitalMagmaFromOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄
+                 → HasMonoidOps A → Set _
+IsUnitalMagmaFromOps {a}  o = IsUnitalMagma {a}  _≈_ _∙_ ε
+  where open HasMonoidOps o
+
 IsRingFromOps : {a : Level} {A : Set a} → ⦃ Equiv A ⦄ → HasRingOps A → Set _
 IsRingFromOps {a} o = IsRing {a} _≈_ _+_ _*_ -_ 0#  1#
   where open HasRingOps o
@@ -511,6 +516,134 @@ record IsSemigroupHomomorphism
           ⟦ x ⟧ ∙ ⟦ y ∙ z ⟧
         ≈⟨ sym (∙-homo x (y ∙ z)) ⟩
           ⟦ x ∙ (y ∙ z) ⟧
+        ∎
+
+record IsBandHomomorphism
+         ⦃ hasBinOpA : HasBinOp A ⦄
+         ⦃ hasBinOpB : HasBinOp B ⦄
+         ⦃ isBandB : FromHasBinOp IsBand hasBinOpB ⦄ : Set (a ⊔ ℓ) where
+
+  open HasBinOp ⦃ … ⦄
+  open IsBand ⦃ … ⦄
+
+  instance
+    _ : IsSemigroup {b} _≈_ _∙_
+    _ = isSemigroup
+
+  field
+    isSemigroupHomomorphism : IsSemigroupHomomorphism
+
+  -- brings record fields '∙-homo' and 'isMagma-trans' into
+  -- scope and re-exports them
+  open IsSemigroupHomomorphism isSemigroupHomomorphism public
+
+  isBand-trans : IsBand {a} _≈_ _∙_
+  isBand-trans =
+    record
+      { isSemigroup = isSemigroup-trans
+      ; idem = ∙-idem
+      }
+    where
+      open import Relation.Binary.Reasoning.Setoid (setoid)
+
+      ∙-idem : Idempotent _≈_ _∙_
+      ∙-idem x =
+        begin
+          ⟦ x ∙ x ⟧
+        ≈⟨ ∙-homo x x ⟩
+          ⟦ x ⟧ ∙ ⟦ x ⟧
+        ≈⟨ idem ⟦ x ⟧ ⟩
+          ⟦ x ⟧
+        ∎
+
+record IsCommutativeSemigroupHomomorphism
+         ⦃ hasBinOpA : HasBinOp A ⦄
+         ⦃ hasBinOpB : HasBinOp B ⦄
+         ⦃ isCommutativeSemigroupB : FromHasBinOp IsCommutativeSemigroup hasBinOpB ⦄ : Set (a ⊔ ℓ) where
+
+  open HasBinOp ⦃ … ⦄
+  open IsCommutativeSemigroup ⦃ … ⦄
+
+  instance
+    _ : IsSemigroup {b} _≈_ _∙_
+    _ = isSemigroup
+
+  field
+    isSemigroupHomomorphism : IsSemigroupHomomorphism
+
+  -- brings record fields '∙-homo' and 'isMagma-trans' into
+  -- scope and re-exports them
+  open IsSemigroupHomomorphism isSemigroupHomomorphism public
+
+  isCommutativeSemigroup-trans : IsCommutativeSemigroup {a} _≈_ _∙_
+  isCommutativeSemigroup-trans =
+    record
+      { isSemigroup = isSemigroup-trans
+      ; comm = ∙-comm
+      }
+    where
+      open import Relation.Binary.Reasoning.Setoid (setoid)
+      ∙-comm : Commutative _≈_ _∙_
+      ∙-comm x y =
+        begin
+          ⟦ x ∙ y ⟧
+        ≈⟨ ∙-homo x y ⟩
+          ⟦ x ⟧ ∙ ⟦ y ⟧
+        ≈⟨ comm ⟦ x ⟧ ⟦ y ⟧ ⟩
+          ⟦ y ⟧ ∙ ⟦ x ⟧
+        ≈⟨ sym (∙-homo y x) ⟩
+          ⟦ y ∙ x ⟧
+        ∎
+
+record IsUnitalMagmaHomomorphism
+         ⦃ hasMonoidOpsA : HasMonoidOps A ⦄
+         ⦃ hasMonoidOpsB : HasMonoidOps B ⦄
+         ⦃ isUnitalMagmaB : IsUnitalMagmaFromOps hasMonoidOpsB ⦄ : Set (a ⊔ ℓ) where
+
+  open HasMonoidOps ⦃ … ⦄
+  open IsUnitalMagma ⦃ … ⦄
+
+  instance
+    _ : IsMagma {b} _≈_ _∙_
+    _ = isMagma
+
+  field
+    isMagmaHomomorphism : IsMagmaHomomorphism
+    ε-homo : ⟦ ε ⟧ ≈ ε
+
+  -- Bring record fields into scope and re-export them
+  open IsMagmaHomomorphism isMagmaHomomorphism public
+
+  isUnitalMagma-trans : IsUnitalMagma {a} _≈_ _∙_ ε
+  isUnitalMagma-trans =
+    record
+      { isMagma = isMagma-trans
+      ; identity = ∙-identityˡ , ∙-identityʳ
+      }
+    where
+      open import Relation.Binary.Reasoning.Setoid (setoid)
+      ∙-identityˡ : LeftIdentity _≈_ ε _∙_
+      ∙-identityˡ x =
+        begin
+          ⟦ ε ∙ x ⟧
+        ≈⟨ ∙-homo ε x  ⟩
+          ⟦ ε ⟧ ∙ ⟦ x ⟧
+        ≈⟨ ∙-congʳ ε-homo ⟩
+          ε ∙ ⟦ x ⟧
+        ≈⟨ identityˡ ⟦ x ⟧ ⟩
+          ⟦ x ⟧
+        ∎
+
+      ∙-identityʳ : RightIdentity _≈_ ε _∙_
+      ∙-identityʳ x =
+        begin
+          ⟦ x ∙ ε ⟧
+        ≈⟨ ∙-homo x ε ⟩
+          ⟦ x ⟧ ∙ ⟦ ε ⟧
+        ≈⟨ ∙-congˡ ε-homo ⟩
+          ⟦ x ⟧ ∙ ε
+        ≈⟨ identityʳ ⟦ x ⟧ ⟩
+          ⟦ x ⟧
         ∎
 
 record IsMonoidHomomorphism
