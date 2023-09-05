@@ -26,6 +26,7 @@ record HasInverse {a} (A : Set a) : Set a where
   field
     _⁻¹ : A → A
 
+-- 1 binary operation & 1 element
 record HasMonoidOps {a} (A : Set a) : Set a where
   field
     hasBinOp    : HasBinOp A
@@ -40,6 +41,10 @@ record HasMonoidOps {a} (A : Set a) : Set a where
     hasIdentityFromMonoid : HasIdentity A
     hasIdentityFromMonoid = hasIdentity
 
+-- 1 binary operation, 1 unary operation & 1 element
+--
+-- The name, HasGroupOps, is only representative. Also includes other
+-- structures such as UnitalMagma
 record HasGroupOps {a} (A : Set a) : Set a where
   field
     hasMonoidOps : HasMonoidOps A
@@ -54,15 +59,68 @@ record HasGroupOps {a} (A : Set a) : Set a where
     hasInverseFromGroup : HasInverse A
     hasInverseFromGroup = hasInverse
 
-record HasRingOps {a} (A : Set a) : Set a where
-  infixr 26 _+_
-  infixr 27 _*_
+-- 2 binary operations & 1 element
+--
+-- The name, HasNearSemiringOps, is only representative. Also includes other
+-- structures such as IsSemiringWithoutOne.
+record HasNearSemiringOps {a} (A : Set a) : Set a where
   field
-    _+_ : A → A → A
-    _*_ : A → A → A
-    -_ : A → A
-    0# : A
-    1# : A
+    hasPlus : HasBinOp A
+    hasStar : HasBinOp A
+    hasZero : HasIdentity A
+
+  open HasBinOp    hasPlus renaming (_∙_ to infixr 26 _+_) public
+  open HasBinOp    hasStar renaming (_∙_ to infixr 27 _*_) public
+  open HasIdentity hasZero renaming (ε   to 0# ) public
+
+-- 2 binary operations & 2 elements
+--
+-- The name, HasSemiringOps, is only representative. Also includes other
+-- structures such as IsKleeneAlgebra and IsQuasiring
+record HasSemiringOps {a} (A : Set a) : Set a where
+  field
+    hasNearSemiringOps : HasNearSemiringOps A
+    hasOne : HasIdentity A
+
+  open HasNearSemiringOps hasNearSemiringOps public
+  open HasIdentity hasOne renaming (ε to 1#) public
+
+record HasNearringOps {a} (A : Set a) : Set a where
+  field
+    hasSemiringOps : HasSemiringOps A
+    hasInverse : HasInverse A
+
+  open HasSemiringOps hasSemiringOps public
+  open HasInverse hasInverse public
+
+  hasQuasiringOps : HasSemiringOps A
+  hasQuasiringOps =
+    record
+      { hasNearSemiringOps =
+          record
+            { hasPlus = record { _∙_ = _+_ }
+            ; hasStar = record { _∙_ = _*_ }
+            ; hasZero = record { ε = 0# }
+            }
+      ; hasOne = record { ε = 1# }
+      }
+
+  instance
+    hasQuasiringFromNearring : HasSemiringOps A
+    hasQuasiringFromNearring = hasQuasiringOps
+
+-- 2 binary operations, 1 unary operation & 2 elements
+--
+-- The name, HasRingOps, is only representative. Also includes other
+-- structures such as IsNonAssociatiaveRing
+record HasRingOps {a} (A : Set a) : Set a where
+  field
+    hasSemiringOps : HasSemiringOps A
+    hasMinus : HasInverse A
+
+  open HasSemiringOps hasSemiringOps public
+  open HasInverse hasMinus renaming (_⁻¹ to -_) public
+
 
   hasMonoidOps : HasMonoidOps A
   hasMonoidOps = record
@@ -85,6 +143,21 @@ record HasRingOps {a} (A : Set a) : Set a where
     hasGroupOpsFromRing : HasGroupOps A
     hasGroupOpsFromRing = hasGroupOps
 
+-- 3 binary operations
+--
+-- The name, HasQuasigroupOps, is only representative. Also includes
+-- other structures such as IsLoop
+record HasQuasigroupOps {a} (A : Set a) : Set a where
+  field
+    hasBinOp       : HasBinOp A
+    hasLeftDivide  : HasBinOp A
+    hasRightDivide : HasBinOp A
+
+  open HasBinOp hasBinOp public
+  open HasBinOp hasLeftDivide  renaming (_∙_ to _\\_) public
+  open HasBinOp hasRightDivide renaming (_∙_ to _//_) public
+
+
 record Equiv {a} (A : Set a) : Set (a ⊔ suc ℓ) where
   infixr 20 _≈_
   field
@@ -105,30 +178,38 @@ instance
 --
 -- Helper functions
 --
-
 FromHasBinOp : {a : _} {A : Set a} → ⦃ Equiv A ⦄
-                        → (Rel A _ → Op₂ A → Set (a ⊔ ℓ)) → HasBinOp A → Set _
+             → (Rel A _ → Op₂ A → Set (a ⊔ ℓ)) → HasBinOp A → Set _
 FromHasBinOp {a} f o = f _≈_ _∙_
   where open HasBinOp o
 
 FromMonoidOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄
-                 → (Rel A _ → Op₂ A → A → Set (a ⊔ ℓ)) → HasMonoidOps A → Set _
+              → (Rel A _ → Op₂ A → A → Set (a ⊔ ℓ)) → HasMonoidOps A → Set _
 FromMonoidOps {a} f o = f  _≈_ _∙_ ε
   where open HasMonoidOps o
 
-IsRingFromOps : {a : Level} {A : Set a} → ⦃ Equiv A ⦄ → HasRingOps A → Set _
-IsRingFromOps {a} o = IsRing {a} _≈_ _+_ _*_ -_ 0#  1#
+FromGroupOps : {a : _} {A : Set a} → ⦃ Equiv A ⦄
+             → (Rel A _ → Op₂ A → A → Op₁ A → Set (a ⊔ ℓ))
+             → HasGroupOps A → Set _
+FromGroupOps {a} f o = f _≈_ _∙_ ε _⁻¹
+  where open HasGroupOps o
+
+-- The name, FromSemiringOps, is only representative. Also includes
+FromSemiringOps : {a : Level} {A : Set a} → ⦃ Equiv A ⦄
+            → (Rel A _ → Op₂ A → Op₂ A → A → A → Set (a ⊔ ℓ))
+            → HasSemiringOps A → Set _
+FromSemiringOps {a} f o = f _≈_ _+_ _*_ 0#  1#
+  where open HasSemiringOps o
+
+FromRingOps : {a : Level} {A : Set a} → ⦃ Equiv A ⦄
+            → (Rel A _ → Op₂ A → Op₂ A → Op₁ A → A → A → Set (a ⊔ ℓ))
+            → HasRingOps A → Set _
+FromRingOps {a} f o = f _≈_ _+_ _*_ -_ 0#  1#
   where open HasRingOps o
 
-IsGroupFromOps : {a : Level} {A : Set a} → ⦃ Equiv A ⦄ → HasGroupOps A → Set _
-IsGroupFromOps {a} o = IsGroup {a} _≈_ _∙_ ε _⁻¹
-  where
-    open HasGroupOps o
-
-IsAbelianGroupFromOps : {a : Level} {A : Set a} → ⦃ Equiv A ⦄ → HasGroupOps A → Set _
-IsAbelianGroupFromOps {a} o = IsAbelianGroup {a} _≈_ _∙_ ε _⁻¹
-  where
-    open HasGroupOps o
+------------------------------------------------------------------------
+-- Structures with 1 binary operation
+------------------------------------------------------------------------
 
 record IsMagmaHomomorphism
          ⦃ hasBinOpA : HasBinOp A ⦄
@@ -599,6 +680,10 @@ record IsCommutativeSemigroupHomomorphism
       ; comm = ∙-comm
       }
 
+------------------------------------------------------------------------
+-- Structures with 1 binary operation & 1 element
+------------------------------------------------------------------------
+
 record IsUnitalMagmaHomomorphism
          ⦃ hasMonoidOpsA : HasMonoidOps A ⦄
          ⦃ hasMonoidOpsB : HasMonoidOps B ⦄
@@ -755,10 +840,21 @@ record IsCommutativeMonoidHomomorphism
       ; comm = ∙-comm
       }
 
+record IsIdempotentCommutativeMonoidHomomorphism
+         ⦃ hasMonoidOpsA : HasMonoidOps A ⦄
+         ⦃ hasMonoidOpsB : HasMonoidOps B ⦄
+         ⦃ isMonoidB : FromMonoidOps IsIdempotentCommutativeMonoid hasMonoidOpsB ⦄ : Set (a ⊔ ℓ) where
+
+    -- FIXME: NOT DONE
+
+------------------------------------------------------------------------
+-- Structures with 2 binary operations & 1 element
+------------------------------------------------------------------------
+
 record IsGroupHomomorphism
          ⦃ hasGroupOpsA : HasGroupOps A ⦄
          ⦃ hasGroupOpsB : HasGroupOps B ⦄
-         ⦃ isGroupB : IsGroupFromOps hasGroupOpsB ⦄ : Set (a ⊔ ℓ) where
+         ⦃ isGroupB : FromGroupOps IsGroup hasGroupOpsB ⦄ : Set (a ⊔ ℓ) where
 
   open HasGroupOps ⦃ … ⦄
   open IsGroup ⦃ … ⦄
@@ -826,7 +922,7 @@ record IsGroupHomomorphism
 record IsAbelianGroupHomomorphism
          ⦃ hasGroupOpsA : HasGroupOps A ⦄
          ⦃ hasGroupOpsB : HasGroupOps B ⦄
-         ⦃ isAbelianGroupB : IsAbelianGroupFromOps hasGroupOpsB ⦄ : Set (a ⊔ ℓ) where
+         ⦃ isAbelianGroupB : FromGroupOps IsAbelianGroup hasGroupOpsB ⦄ : Set (a ⊔ ℓ) where
 
   open HasGroupOps ⦃ … ⦄
   open IsAbelianGroup ⦃ … ⦄
@@ -864,7 +960,7 @@ record IsAbelianGroupHomomorphism
 record IsRingHomomorphism
          ⦃ hasRingOpsA : HasRingOps A ⦄
          ⦃ hasRingOpsB : HasRingOps B ⦄
-         ⦃ isRingB : IsRingFromOps hasRingOpsB ⦄ : Set (a ⊔ ℓ) where
+         ⦃ isRingB : FromRingOps IsRing hasRingOpsB ⦄ : Set (a ⊔ ℓ) where
   open HasRingOps ⦃ … ⦄
   open IsRing ⦃ … ⦄
 
@@ -912,7 +1008,7 @@ record IsRingHomomorphism
     ; identity                 to *-identity′
     )
 
-  isRing-trans : IsRingFromOps hasRingOpsA
+  isRing-trans : FromRingOps IsRing hasRingOpsA
   isRing-trans =
     record
       { +-isAbelianGroup = +-isAbelianGroup-trans
