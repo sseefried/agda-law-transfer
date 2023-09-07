@@ -884,8 +884,14 @@ record IsIdempotentCommutativeMonoidHomomorphism
       }
 
 ------------------------------------------------------------------------
--- Structures with 2 binary operations & 1 element
+-- Structures with 1 binary operation, 1 unary operation & 1 element
 ------------------------------------------------------------------------
+
+record IsInvertibleMagmaHomomorphism : Set (a ⊔ ℓ) where
+  -- FIXME: Not done
+
+record IsInvertibleUnitalMagmaHomomorphism : Set (a ⊔ ℓ) where
+  -- FIXME: Not done
 
 record IsGroupHomomorphism
          ⦃ hasGroupOpsA : HasGroupOps A ⦄
@@ -992,6 +998,48 @@ record IsAbelianGroupHomomorphism
         ≈⟨ sym (∙-homo y x ) ⟩
           ⟦ y ∙ x ⟧
         ∎
+
+------------------------------------------------------------------------
+-- Structures with 2 binary operations & 1 element
+------------------------------------------------------------------------
+
+record IsSemiringWithoutAnnihilatingZeroHomomorphism : Set (a ⊔ ℓ) where
+  -- FIXME: Not done
+
+record IsSemiringHomomorphism : Set (a ⊔ ℓ) where
+  -- FIXME: Not done
+
+record IsCommutativeSemiringHomomorphism : Set (a ⊔ ℓ) where
+  -- FIXME: Not done
+
+record IsCancellativeCommutativeSemiringHomomorphism : Set (a ⊔ ℓ) where
+  -- FIXME: Not done
+
+record IsIdempotentSemiringHomomorphism : Set (a ⊔ ℓ) where
+  -- FIXME: Not done
+
+record IsKleeneAlgebraHomomorphism : Set (a ⊔ ℓ) where
+  -- FIXME: Not done
+
+record IsQuasiringHomomorphism : Set (a ⊔ ℓ) where
+  -- FIXME: Not done
+
+------------------------------------------------------------------------
+-- Structures with 2 binary operations, 1 unary operation & 1 element
+------------------------------------------------------------------------
+
+record IsRingWithoutOneHomomorphism : Set (a ⊔ ℓ) where
+  -- FIXME: Not done yet
+
+------------------------------------------------------------------------
+-- Structures with 2 binary operations, 1 unary operation & 2 elements
+------------------------------------------------------------------------
+
+record IsNonAssociativeRingHomomorphism
+         ⦃ hasRingOpsA : HasRingOps A ⦄
+         ⦃ hasRingOpsB : HasRingOps B ⦄
+         ⦃ isRingB : FromRingOps IsRing hasRingOpsB ⦄ : Set (a ⊔ ℓ) where
+  -- FIXME: Not done yet
 
 record IsRingHomomorphism
          ⦃ hasRingOpsA : HasRingOps A ⦄
@@ -1120,3 +1168,16 @@ record IsRingHomomorphism
         ≈⟨ sym 0#-homo ⟩
           ⟦ 0# ⟧
         ∎
+
+record IsCommutativeRingHomomorphism
+         ⦃ hasRingOpsA : HasRingOps A ⦄
+         ⦃ hasRingOpsB : HasRingOps B ⦄
+         ⦃ isRingB : FromRingOps IsRing hasRingOpsB ⦄ : Set (a ⊔ ℓ) where
+  -- FIXME: Not done yet
+
+------------------------------------------------------------------------
+-- Structures with 3 binary operations
+------------------------------------------------------------------------
+
+record IsQuasigroupHomomorphism : Set (a ⊔ ℓ) where
+  -- FIXME: Not done yet
