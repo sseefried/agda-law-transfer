@@ -851,9 +851,37 @@ record IsCommutativeMonoidHomomorphism
 record IsIdempotentCommutativeMonoidHomomorphism
          ⦃ hasMonoidOpsA : HasMonoidOps A ⦄
          ⦃ hasMonoidOpsB : HasMonoidOps B ⦄
-         ⦃ isMonoidB : FromMonoidOps IsIdempotentCommutativeMonoid hasMonoidOpsB ⦄ : Set (a ⊔ ℓ) where
+         ⦃ isIdempotentCommutativeMonoidB : FromMonoidOps IsIdempotentCommutativeMonoid hasMonoidOpsB ⦄ : Set (a ⊔ ℓ) where
 
-    -- FIXME: NOT DONE
+  open HasMonoidOps ⦃ … ⦄
+  open IsIdempotentCommutativeMonoid ⦃ … ⦄
+
+  instance
+    _ : IsCommutativeMonoid {b} _≈_ _∙_ ε
+    _ = isCommutativeMonoid
+
+  field
+    isCommutativeMonoidHomomorphism : IsCommutativeMonoidHomomorphism
+
+  open IsCommutativeMonoidHomomorphism isCommutativeMonoidHomomorphism public
+
+  ∙-idem : Idempotent {a} _≈_ _∙_
+  ∙-idem x =
+    begin
+      ⟦ x ∙ x ⟧
+    ≈⟨ ∙-homo x x ⟩
+      ⟦ x ⟧ ∙ ⟦ x ⟧
+    ≈⟨ idem ⟦ x ⟧ ⟩
+      ⟦ x ⟧
+    ∎
+    where open import Relation.Binary.Reasoning.Setoid (setoid)
+
+  isIdempotentCommutativeMonoid-trans : IsIdempotentCommutativeMonoid {a} _≈_ _∙_ ε
+  isIdempotentCommutativeMonoid-trans =
+    record
+      { isCommutativeMonoid = isCommutativeMonoid-trans
+      ; idem = ∙-idem
+      }
 
 ------------------------------------------------------------------------
 -- Structures with 2 binary operations & 1 element
