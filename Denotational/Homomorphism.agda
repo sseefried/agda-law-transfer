@@ -1034,8 +1034,8 @@ record IsInvertibleMagmaHomomorphism
       ⟦ u ⁻¹ ⟧
     ∎
 
-  isInvertableMagma-trans : IsInvertibleMagma {a} _≈_ _∙_ ε _⁻¹
-  isInvertableMagma-trans =
+  isInvertibleMagma-trans : IsInvertibleMagma {a} _≈_ _∙_ ε _⁻¹
+  isInvertibleMagma-trans =
     record
       { isMagma = isMagma-trans
       ; inverse = ε-⁻¹-inverse
@@ -1045,8 +1045,52 @@ record IsInvertibleMagmaHomomorphism
 record IsInvertibleUnitalMagmaHomomorphism
          ⦃ hasGroupOpsA : HasGroupOps A ⦄
          ⦃ hasGroupOpsB : HasGroupOps B ⦄
-         ⦃ isInvertibleMagmaB : FromGroupOps IsInvertibleMagma hasGroupOpsB ⦄ : Set (a ⊔ ℓ) where
-  -- FIXME: Not done
+         ⦃ isInvertibleUnitalMagmaB : FromGroupOps IsInvertibleUnitalMagma hasGroupOpsB ⦄ : Set (a ⊔ ℓ) where
+  open HasGroupOps ⦃ … ⦄
+  open IsInvertibleUnitalMagma ⦃ … ⦄
+
+  instance
+    _ : IsInvertibleMagma {b} _≈_ _∙_ ε _⁻¹
+    _ = isInvertibleMagma
+
+  field
+    isInvertibleMagmaHomomorphism : IsInvertibleMagmaHomomorphism
+
+  open IsInvertibleMagmaHomomorphism isInvertibleMagmaHomomorphism public
+
+  open import Relation.Binary.Reasoning.Setoid (setoid)
+
+  ε-identityˡ : LeftIdentity {a} _≈_ ε _∙_
+  ε-identityˡ x =
+    begin
+      ⟦ ε ∙ x ⟧
+    ≈⟨ ∙-homo ε x ⟩
+      ⟦ ε ⟧ ∙ ⟦ x ⟧
+    ≈⟨ ∙-congʳ ε-homo ⟩
+      ε ∙ ⟦ x ⟧
+    ≈⟨ identityˡ ⟦ x ⟧ ⟩
+      ⟦ x ⟧
+    ∎
+
+  ε-identityʳ : RightIdentity {a}_≈_ ε _∙_
+  ε-identityʳ x =
+    begin
+      ⟦ x ∙ ε ⟧
+    ≈⟨ ∙-homo x ε ⟩
+      ⟦ x ⟧ ∙ ⟦ ε ⟧
+    ≈⟨ ∙-congˡ ε-homo  ⟩
+      ⟦ x ⟧ ∙ ε
+    ≈⟨ identityʳ ⟦ x ⟧ ⟩
+      ⟦ x ⟧
+    ∎
+
+  isInvertibleUnitalMagma-trans : IsInvertibleUnitalMagma {a} _≈_ _∙_ ε _⁻¹
+  isInvertibleUnitalMagma-trans =
+    record
+      { isInvertibleMagma = isInvertibleMagma-trans
+      ; identity = ε-identityˡ , ε-identityʳ
+      }
+
 
 record IsGroupHomomorphism
          ⦃ hasGroupOpsA : HasGroupOps A ⦄
