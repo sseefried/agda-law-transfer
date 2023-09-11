@@ -17,14 +17,23 @@ record HasBinOp {a} (A : Set a) : Set a where
   field
     _∙_ : A → A → A
 
+mkBinOp : {a : Level} {A : Set a} → Op₂ A → HasBinOp A
+mkBinOp _∙_ = record { _∙_ = _∙_ }
+
 record HasIdentity {a} (A : Set a) : Set a where
   field
     ε : A
+
+mkIdentity : {a : Level} {A : Set a} →  A → HasIdentity A
+mkIdentity ε = record { ε = ε }
 
 record HasInverse {a} (A : Set a) : Set a where
   infix 21 _⁻¹
   field
     _⁻¹ : A → A
+
+mkInverse : {a : Level} {A : Set a} → Op₁ A → HasInverse A
+mkInverse _⁻¹ = record { _⁻¹ = _⁻¹ }
 
 -- 1 binary operation & 1 element
 record HasMonoidOps {a} (A : Set a) : Set a where
@@ -47,8 +56,8 @@ record HasMonoidOps {a} (A : Set a) : Set a where
 mkMonoidOps : {a : Level} {A : Set a} → Op₂ A → A → HasMonoidOps A
 mkMonoidOps _∙_ ε =
   record
-    { hasBinOp = record { _∙_ = _∙_ }
-    ; hasIdentity = record { ε = ε }
+    { hasBinOp = mkBinOp _∙_
+    ; hasIdentity = mkIdentity ε
     }
 
 -- 1 binary operation, 1 unary operation & 1 element
@@ -75,7 +84,7 @@ mkGroupOps : {a : Level} {A : Set a} → Op₂ A → A → Op₁ A → HasGroupO
 mkGroupOps _∙_ ε _⁻¹ =
   record
     { hasMonoidOps = mkMonoidOps _∙_ ε
-    ; hasInverse = record { _⁻¹ = _⁻¹ }
+    ; hasInverse = mkInverse _⁻¹
     }
 
 -- 2 binary operations & 1 element
@@ -100,9 +109,9 @@ record HasNearSemiringOps {a} (A : Set a) : Set a where
 mkNearSemiringOps : {a : Level} {A : Set a} → Op₂ A → Op₂ A → A → HasNearSemiringOps A
 mkNearSemiringOps _+_ _*_ 0# =
   record
-    { hasPlusBinOp = record { _∙_ = _+_ }
-    ; hasStarBinOp = record { _∙_ = _*_ }
-    ; hasZeroIdentity = record { ε = 0# }
+    { hasPlusBinOp    = mkBinOp _+_
+    ; hasStarBinOp    = mkBinOp _*_
+    ; hasZeroIdentity = mkIdentity 0#
     }
 
 -- 2 binary operations & 2 elements
@@ -131,7 +140,7 @@ mkSemiringOps : {a : Level} {A : Set a} → Op₂ A → Op₂ A → A → A → 
 mkSemiringOps _+_ _*_ 0# 1# =
   record
     { hasNearSemiringOps = mkNearSemiringOps _+_ _*_ 0#
-    ; hasOneIdentity = record { ε = 1# }
+    ; hasOneIdentity = mkIdentity 1#
     }
 
 record HasNearringOps {a} (A : Set a) : Set a where
@@ -159,7 +168,7 @@ mkNearringOps : {a : Level} {A : Set a} → Op₂ A → Op₂ A → A → A → 
 mkNearringOps _+_ _*_ 0# 1# _⁻¹ =
   record
     { hasSemiringOps = mkSemiringOps _+_ _*_ 0# 1#
-    ; hasStarInverse = record { _⁻¹ = _⁻¹ }
+    ; hasStarInverse = mkInverse _⁻¹
     }
 
 
@@ -192,7 +201,7 @@ mkRingOps : {a : Level} {A : Set a} → Op₂ A → Op₂ A → Op₁ A → A �
 mkRingOps _+_ _*_ -_ 0# 1#  =
   record
     { hasSemiringOps = mkSemiringOps _+_ _*_ 0# 1#
-    ; hasPlusInverse = record { _⁻¹ = -_ }
+    ; hasPlusInverse = mkInverse -_
     }
 
 -- 3 binary operations
@@ -218,6 +227,14 @@ record HasQuasigroupOps {a} (A : Set a) : Set a where
 
     hasRightDivideFromQuasiGroupOps : HasBinOp A
     hasRightDivideFromQuasiGroupOps = hasRightDivide
+
+mkQuasigroupOps : {a : Level} {A : Set a} → Op₂ A → Op₂ A → Op₂ A → HasQuasigroupOps A
+mkQuasigroupOps _∙_ _\\_ _//_ =
+  record
+    { hasBinOp       = mkBinOp _∙_
+    ; hasLeftDivide  = mkBinOp _\\_
+    ; hasRightDivide = mkBinOp _//_
+    }
 
 record Equiv {a} (A : Set a) : Set (a ⊔ suc ℓ) where
   infixr 20 _≈_
@@ -1025,7 +1042,7 @@ record IsInvertibleMagmaHomomorphism
       ; ⁻¹-cong = ⁻¹-congruent
       }
 
-record IsInvertibleUnitalMagma
+record IsInvertibleUnitalMagmaHomomorphism
          ⦃ hasGroupOpsA : HasGroupOps A ⦄
          ⦃ hasGroupOpsB : HasGroupOps B ⦄
          ⦃ isInvertibleMagmaB : FromGroupOps IsInvertibleMagma hasGroupOpsB ⦄ : Set (a ⊔ ℓ) where
