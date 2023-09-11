@@ -742,34 +742,25 @@ record IsCommutativeSemigroupHomomorphism
   -- scope and re-exports them
   open IsSemigroupHomomorphism isSemigroupHomomorphism public
 
-
-  ∙-comm : Commutative _≈_ _∙_
-  ∙-comm x y =
-    begin
-      ⟦ x ∙ y ⟧
-    ≈⟨ ∙-homo x y ⟩
-      ⟦ x ⟧ ∙ ⟦ y ⟧
-    ≈⟨ comm ⟦ x ⟧ ⟦ y ⟧ ⟩
-      ⟦ y ⟧ ∙ ⟦ x ⟧
-    ≈⟨ sym (∙-homo y x) ⟩
-      ⟦ y ∙ x ⟧
-    ∎
-    where
-      open import Relation.Binary.Reasoning.Setoid (setoid)
-
   isCommutativeSemigroup-trans : IsCommutativeSemigroup {a} _≈_ _∙_
   isCommutativeSemigroup-trans =
     record
       { isSemigroup = isSemigroup-trans
       ; comm = ∙-comm
       }
-
-  isCommutativeMagma-trans : IsCommutativeMagma {a} _≈_ _∙_
-  isCommutativeMagma-trans =
-    record
-      { isMagma = isMagma-trans
-      ; comm = ∙-comm
-      }
+    where
+      open import Relation.Binary.Reasoning.Setoid (setoid)
+      ∙-comm : Commutative _≈_ _∙_
+      ∙-comm x y =
+        begin
+          ⟦ x ∙ y ⟧
+        ≈⟨ ∙-homo x y ⟩
+          ⟦ x ⟧ ∙ ⟦ y ⟧
+        ≈⟨ comm ⟦ x ⟧ ⟦ y ⟧ ⟩
+          ⟦ y ⟧ ∙ ⟦ x ⟧
+        ≈⟨ sym (∙-homo y x) ⟩
+          ⟦ y ∙ x ⟧
+        ∎
 
 ------------------------------------------------------------------------
 -- Structures with 1 binary operation & 1 element
@@ -845,45 +836,38 @@ record IsMonoidHomomorphism
   -- Bring record fields into scope and re-export them
   open IsSemigroupHomomorphism isSemigroupHomomorphism public
 
-  open import Relation.Binary.Reasoning.Setoid (setoid)
-
-  ∙-identityˡ : LeftIdentity _≈_ ε _∙_
-  ∙-identityˡ x =
-    begin
-      ⟦ ε ∙ x ⟧
-    ≈⟨ ∙-homo ε x  ⟩
-      ⟦ ε ⟧ ∙ ⟦ x ⟧
-    ≈⟨ ∙-congʳ ε-homo ⟩
-      ε ∙ ⟦ x ⟧
-    ≈⟨ identityˡ ⟦ x ⟧ ⟩
-      ⟦ x ⟧
-    ∎
-
-  ∙-identityʳ : RightIdentity _≈_ ε _∙_
-  ∙-identityʳ x =
-    begin
-      ⟦ x ∙ ε ⟧
-    ≈⟨ ∙-homo x ε ⟩
-      ⟦ x ⟧ ∙ ⟦ ε ⟧
-    ≈⟨ ∙-congˡ ε-homo ⟩
-      ⟦ x ⟧ ∙ ε
-    ≈⟨ identityʳ ⟦ x ⟧ ⟩
-      ⟦ x ⟧
-    ∎
-
   isMonoid-trans : IsMonoid {a} _≈_ _∙_ ε
   isMonoid-trans =
     record
       { isSemigroup = isSemigroup-trans
       ; identity = ∙-identityˡ , ∙-identityʳ
       }
+    where
+      open import Relation.Binary.Reasoning.Setoid (setoid)
 
-  isUnitalMagma-trans : IsUnitalMagma {a} _≈_ _∙_ ε
-  isUnitalMagma-trans =
-    record
-      { isMagma = isMagma-trans
-      ; identity = ∙-identityˡ , ∙-identityʳ
-      }
+      ∙-identityˡ : LeftIdentity _≈_ ε _∙_
+      ∙-identityˡ x =
+        begin
+          ⟦ ε ∙ x ⟧
+        ≈⟨ ∙-homo ε x  ⟩
+          ⟦ ε ⟧ ∙ ⟦ x ⟧
+        ≈⟨ ∙-congʳ ε-homo ⟩
+          ε ∙ ⟦ x ⟧
+        ≈⟨ identityˡ ⟦ x ⟧ ⟩
+          ⟦ x ⟧
+        ∎
+
+      ∙-identityʳ : RightIdentity _≈_ ε _∙_
+      ∙-identityʳ x =
+        begin
+          ⟦ x ∙ ε ⟧
+        ≈⟨ ∙-homo x ε ⟩
+          ⟦ x ⟧ ∙ ⟦ ε ⟧
+        ≈⟨ ∙-congˡ ε-homo ⟩
+          ⟦ x ⟧ ∙ ε
+        ≈⟨ identityʳ ⟦ x ⟧ ⟩
+          ⟦ x ⟧
+        ∎
 
 record IsCommutativeMonoidHomomorphism
          ⦃ hasMonoidOpsA : HasMonoidOps A ⦄
@@ -903,33 +887,25 @@ record IsCommutativeMonoidHomomorphism
   -- Bring record fields into scope and re-export them
   open IsMonoidHomomorphism isMonoidHomomorphism public
 
-  ∙-comm : Commutative _≈_ _∙_
-  ∙-comm x y =
-    begin
-      ⟦ x ∙ y ⟧
-    ≈⟨ ∙-homo x y ⟩
-      ⟦ x ⟧ ∙ ⟦ y ⟧
-    ≈⟨ comm ⟦ x ⟧ ⟦ y ⟧ ⟩
-      ⟦ y ⟧ ∙ ⟦ x ⟧
-    ≈⟨ sym (∙-homo y x) ⟩
-      ⟦ y ∙ x ⟧
-    ∎
-    where
-      open import Relation.Binary.Reasoning.Setoid (setoid)
-
   isCommutativeMonoid-trans : IsCommutativeMonoid {a} _≈_ _∙_ ε
   isCommutativeMonoid-trans =
     record
       { isMonoid = isMonoid-trans
       ; comm = ∙-comm
       }
-
-  isCommutativeSemigroup-trans : IsCommutativeSemigroup {a} _≈_ _∙_
-  isCommutativeSemigroup-trans =
-    record
-      { isSemigroup = isSemigroup-trans
-      ; comm = ∙-comm
-      }
+    where
+      open import Relation.Binary.Reasoning.Setoid (setoid)
+      ∙-comm : Commutative _≈_ _∙_
+      ∙-comm x y =
+        begin
+          ⟦ x ∙ y ⟧
+        ≈⟨ ∙-homo x y ⟩
+          ⟦ x ⟧ ∙ ⟦ y ⟧
+        ≈⟨ comm ⟦ x ⟧ ⟦ y ⟧ ⟩
+          ⟦ y ⟧ ∙ ⟦ x ⟧
+        ≈⟨ sym (∙-homo y x) ⟩
+          ⟦ y ∙ x ⟧
+        ∎
 
 record IsIdempotentCommutativeMonoidHomomorphism
          ⦃ hasMonoidOpsA : HasMonoidOps A ⦄
@@ -948,16 +924,7 @@ record IsIdempotentCommutativeMonoidHomomorphism
 
   open IsCommutativeMonoidHomomorphism isCommutativeMonoidHomomorphism public
 
-  ∙-idem : Idempotent {a} _≈_ _∙_
-  ∙-idem x =
-    begin
-      ⟦ x ∙ x ⟧
-    ≈⟨ ∙-homo x x ⟩
-      ⟦ x ⟧ ∙ ⟦ x ⟧
-    ≈⟨ idem ⟦ x ⟧ ⟩
-      ⟦ x ⟧
-    ∎
-    where open import Relation.Binary.Reasoning.Setoid (setoid)
+
 
   isIdempotentCommutativeMonoid-trans : IsIdempotentCommutativeMonoid {a} _≈_ _∙_ ε
   isIdempotentCommutativeMonoid-trans =
@@ -965,6 +932,18 @@ record IsIdempotentCommutativeMonoidHomomorphism
       { isCommutativeMonoid = isCommutativeMonoid-trans
       ; idem = ∙-idem
       }
+    where
+      open import Relation.Binary.Reasoning.Setoid (setoid)
+      ∙-idem : Idempotent {a} _≈_ _∙_
+      ∙-idem x =
+        begin
+          ⟦ x ∙ x ⟧
+        ≈⟨ ∙-homo x x ⟩
+          ⟦ x ⟧ ∙ ⟦ x ⟧
+        ≈⟨ idem ⟦ x ⟧ ⟩
+          ⟦ x ⟧
+        ∎
+
 
 ------------------------------------------------------------------------
 -- Structures with 1 binary operation, 1 unary operation & 1 element
@@ -989,51 +968,6 @@ record IsInvertibleMagmaHomomorphism
 
   open IsMagmaHomomorphism isMagmaHomomorphism public
 
-  open import Relation.Binary.Reasoning.Setoid (setoid)
-
-  ε-⁻¹-inverseˡ : LeftInverse {a} _≈_ ε _⁻¹ _∙_
-  ε-⁻¹-inverseˡ x =
-    begin
-      ⟦ (x ⁻¹) ∙ x ⟧
-    ≈⟨ ∙-homo (x ⁻¹) x ⟩
-     ⟦ x ⁻¹ ⟧ ∙ ⟦ x ⟧
-    ≈⟨ ∙-cong (⁻¹-homo x) refl ⟩
-     (⟦ x ⟧ ⁻¹) ∙ ⟦ x ⟧
-    ≈⟨ inverseˡ ⟦ x ⟧ ⟩
-      ε
-    ≈⟨ sym ε-homo  ⟩
-      ⟦ ε ⟧
-    ∎
-
-  ε-⁻¹-inverseʳ : RightInverse {a} _≈_ ε _⁻¹ _∙_
-  ε-⁻¹-inverseʳ x =
-    begin
-      ⟦ x ∙ (x ⁻¹) ⟧
-    ≈⟨ ∙-homo x (x ⁻¹) ⟩
-     ⟦ x ⟧ ∙ ⟦ x ⁻¹ ⟧
-    ≈⟨ ∙-cong refl (⁻¹-homo x) ⟩
-     ⟦ x ⟧ ∙ (⟦ x ⟧ ⁻¹)
-    ≈⟨ inverseʳ ⟦ x ⟧ ⟩
-      ε
-    ≈⟨ sym ε-homo  ⟩
-      ⟦ ε ⟧
-    ∎
-
-  ε-⁻¹-inverse : Inverse _≈_ ε _⁻¹ _∙_
-  ε-⁻¹-inverse = ε-⁻¹-inverseˡ , ε-⁻¹-inverseʳ
-
-  ⁻¹-congruent : Congruent₁ {a} _≈_ _⁻¹
-  ⁻¹-congruent {x} {u} ⟦x⟧≈⟦u⟧ =
-    begin
-      ⟦ x ⁻¹ ⟧
-    ≈⟨ ⁻¹-homo x ⟩
-      (⟦ x ⟧ ⁻¹)
-    ≈⟨ ⁻¹-cong ⟦x⟧≈⟦u⟧ ⟩
-      (⟦ u ⟧ ⁻¹)
-    ≈⟨ sym (⁻¹-homo u) ⟩
-      ⟦ u ⁻¹ ⟧
-    ∎
-
   isInvertibleMagma-trans : IsInvertibleMagma {a} _≈_ _∙_ ε _⁻¹
   isInvertibleMagma-trans =
     record
@@ -1041,6 +975,51 @@ record IsInvertibleMagmaHomomorphism
       ; inverse = ε-⁻¹-inverse
       ; ⁻¹-cong = ⁻¹-congruent
       }
+    where
+      open import Relation.Binary.Reasoning.Setoid (setoid)
+
+      ε-⁻¹-inverseˡ : LeftInverse {a} _≈_ ε _⁻¹ _∙_
+      ε-⁻¹-inverseˡ x =
+        begin
+          ⟦ (x ⁻¹) ∙ x ⟧
+        ≈⟨ ∙-homo (x ⁻¹) x ⟩
+         ⟦ x ⁻¹ ⟧ ∙ ⟦ x ⟧
+        ≈⟨ ∙-cong (⁻¹-homo x) refl ⟩
+         (⟦ x ⟧ ⁻¹) ∙ ⟦ x ⟧
+        ≈⟨ inverseˡ ⟦ x ⟧ ⟩
+          ε
+        ≈⟨ sym ε-homo  ⟩
+          ⟦ ε ⟧
+        ∎
+
+      ε-⁻¹-inverseʳ : RightInverse {a} _≈_ ε _⁻¹ _∙_
+      ε-⁻¹-inverseʳ x =
+        begin
+          ⟦ x ∙ (x ⁻¹) ⟧
+        ≈⟨ ∙-homo x (x ⁻¹) ⟩
+         ⟦ x ⟧ ∙ ⟦ x ⁻¹ ⟧
+        ≈⟨ ∙-cong refl (⁻¹-homo x) ⟩
+         ⟦ x ⟧ ∙ (⟦ x ⟧ ⁻¹)
+        ≈⟨ inverseʳ ⟦ x ⟧ ⟩
+          ε
+        ≈⟨ sym ε-homo  ⟩
+          ⟦ ε ⟧
+        ∎
+
+      ε-⁻¹-inverse : Inverse _≈_ ε _⁻¹ _∙_
+      ε-⁻¹-inverse = ε-⁻¹-inverseˡ , ε-⁻¹-inverseʳ
+
+      ⁻¹-congruent : Congruent₁ {a} _≈_ _⁻¹
+      ⁻¹-congruent {x} {u} ⟦x⟧≈⟦u⟧ =
+        begin
+          ⟦ x ⁻¹ ⟧
+        ≈⟨ ⁻¹-homo x ⟩
+          (⟦ x ⟧ ⁻¹)
+        ≈⟨ ⁻¹-cong ⟦x⟧≈⟦u⟧ ⟩
+          (⟦ u ⟧ ⁻¹)
+        ≈⟨ sym (⁻¹-homo u) ⟩
+          ⟦ u ⁻¹ ⟧
+        ∎
 
 record IsInvertibleUnitalMagmaHomomorphism
          ⦃ hasGroupOpsA : HasGroupOps A ⦄
@@ -1058,39 +1037,41 @@ record IsInvertibleUnitalMagmaHomomorphism
 
   open IsInvertibleMagmaHomomorphism isInvertibleMagmaHomomorphism public
 
-  open import Relation.Binary.Reasoning.Setoid (setoid)
-
-  ε-identityˡ : LeftIdentity {a} _≈_ ε _∙_
-  ε-identityˡ x =
-    begin
-      ⟦ ε ∙ x ⟧
-    ≈⟨ ∙-homo ε x ⟩
-      ⟦ ε ⟧ ∙ ⟦ x ⟧
-    ≈⟨ ∙-congʳ ε-homo ⟩
-      ε ∙ ⟦ x ⟧
-    ≈⟨ identityˡ ⟦ x ⟧ ⟩
-      ⟦ x ⟧
-    ∎
-
-  ε-identityʳ : RightIdentity {a}_≈_ ε _∙_
-  ε-identityʳ x =
-    begin
-      ⟦ x ∙ ε ⟧
-    ≈⟨ ∙-homo x ε ⟩
-      ⟦ x ⟧ ∙ ⟦ ε ⟧
-    ≈⟨ ∙-congˡ ε-homo  ⟩
-      ⟦ x ⟧ ∙ ε
-    ≈⟨ identityʳ ⟦ x ⟧ ⟩
-      ⟦ x ⟧
-    ∎
-
   isInvertibleUnitalMagma-trans : IsInvertibleUnitalMagma {a} _≈_ _∙_ ε _⁻¹
   isInvertibleUnitalMagma-trans =
     record
       { isInvertibleMagma = isInvertibleMagma-trans
-      ; identity = ε-identityˡ , ε-identityʳ
+      ; identity = ε-identity
       }
+    where
+      open import Relation.Binary.Reasoning.Setoid (setoid)
 
+      ε-identityˡ : LeftIdentity {a} _≈_ ε _∙_
+      ε-identityˡ x =
+        begin
+          ⟦ ε ∙ x ⟧
+        ≈⟨ ∙-homo ε x ⟩
+          ⟦ ε ⟧ ∙ ⟦ x ⟧
+        ≈⟨ ∙-congʳ ε-homo ⟩
+          ε ∙ ⟦ x ⟧
+        ≈⟨ identityˡ ⟦ x ⟧ ⟩
+          ⟦ x ⟧
+        ∎
+
+      ε-identityʳ : RightIdentity {a} _≈_ ε _∙_
+      ε-identityʳ x =
+        begin
+          ⟦ x ∙ ε ⟧
+        ≈⟨ ∙-homo x ε ⟩
+          ⟦ x ⟧ ∙ ⟦ ε ⟧
+        ≈⟨ ∙-congˡ ε-homo  ⟩
+          ⟦ x ⟧ ∙ ε
+        ≈⟨ identityʳ ⟦ x ⟧ ⟩
+          ⟦ x ⟧
+        ∎
+
+      ε-identity : Identity {a} _≈_ ε _∙_
+      ε-identity = ε-identityˡ , ε-identityʳ
 
 record IsGroupHomomorphism
          ⦃ hasGroupOpsA : HasGroupOps A ⦄
@@ -1114,7 +1095,7 @@ record IsGroupHomomorphism
   isGroup-trans =
     record
       { isMonoid = isMonoid-trans
-      ; inverse = invˡ , invʳ
+      ; inverse = inv
       ; ⁻¹-cong = ⁻¹-congruent
       }
     where
@@ -1148,17 +1129,20 @@ record IsGroupHomomorphism
             ⟦ ε ⟧
           ∎
 
+      inv : Inverse {a} _≈_ ε _⁻¹ _∙_
+      inv = invˡ , invʳ
+
       ⁻¹-congruent : Congruent₁ {a} _≈_ _⁻¹
       ⁻¹-congruent {x} {u} ⟦x⟧≈⟦u⟧ =
-        begin
-          ⟦ x ⁻¹ ⟧
-        ≈⟨ ⁻¹-homo x ⟩
-          ⟦ x ⟧ ⁻¹
-        ≈⟨ ⁻¹-cong ⟦x⟧≈⟦u⟧ ⟩
-          ⟦ u ⟧ ⁻¹
-        ≈⟨ sym (⁻¹-homo u) ⟩
-          ⟦ u ⁻¹ ⟧
-        ∎
+            begin
+              ⟦ x ⁻¹ ⟧
+            ≈⟨ ⁻¹-homo x ⟩
+              ⟦ x ⟧ ⁻¹
+            ≈⟨ ⁻¹-cong ⟦x⟧≈⟦u⟧ ⟩
+              ⟦ u ⟧ ⁻¹
+            ≈⟨ sym (⁻¹-homo u) ⟩
+              ⟦ u ⁻¹ ⟧
+            ∎
 
 record IsAbelianGroupHomomorphism
          ⦃ hasGroupOpsA : HasGroupOps A ⦄
