@@ -28,131 +28,196 @@ record HasInverse {a} (A : Set a) : Set a where
 
 -- 1 binary operation & 1 element
 record HasMonoidOps {a} (A : Set a) : Set a where
-  infixr 29 _∙_
+
   field
-    _∙_ : A → A → A
-    ε   : A
+    hasBinOp    : HasBinOp A
+    hasIdentity : HasIdentity A
 
-  instance -- methods must be named to be re-exported
-    hasBinOpFromMonoid : HasBinOp A
-    hasBinOpFromMonoid = record { _∙_ = _∙_ }
+  open HasBinOp    hasBinOp public
+  open HasIdentity hasIdentity public
 
-    hasIdentityFromMonoid : HasIdentity A
-    hasIdentityFromMonoid = record { ε = ε }
+  instance
+    hasBinOpFromMonoidOps : HasBinOp A
+    hasBinOpFromMonoidOps = hasBinOp
+
+    hasIdentityFromMonoidOps : HasIdentity A
+    hasIdentityFromMonoidOps = hasIdentity
+
+-- smart constructor
+mkMonoidOps : {a : Level} {A : Set a} → Op₂ A → A → HasMonoidOps A
+mkMonoidOps _∙_ ε =
+  record
+    { hasBinOp = record { _∙_ = _∙_ }
+    ; hasIdentity = record { ε = ε }
+    }
 
 -- 1 binary operation, 1 unary operation & 1 element
 --
 -- The name, HasGroupOps, is only representative. Also includes other
 -- structures such as UnitalMagma
 record HasGroupOps {a} (A : Set a) : Set a where
-  infixr 29 _∙_
-  infix 21 _⁻¹
   field
-    _∙_ : A → A → A
-    ε   : A
-    _⁻¹ : A → A
+    hasMonoidOps : HasMonoidOps A
+    hasInverse : HasInverse A
 
-  instance -- methods must be named to be re-exported
-    hasMonoidOpsFromGroup : HasMonoidOps A
-    hasMonoidOpsFromGroup = record { _∙_ = _∙_ ; ε = ε }
+  open HasMonoidOps hasMonoidOps public
+  open HasInverse hasInverse public
+
+  instance
+    hasMonoidOpsFromGroupOps : HasMonoidOps A
+    hasMonoidOpsFromGroupOps = hasMonoidOps
 
     hasInverseFromGroup : HasInverse A
-    hasInverseFromGroup = record { _⁻¹ = _⁻¹ }
+    hasInverseFromGroup = hasInverse
+
+-- smart constructor
+mkGroupOps : {a : Level} {A : Set a} → Op₂ A → A → Op₁ A → HasGroupOps A
+mkGroupOps _∙_ ε _⁻¹ =
+  record
+    { hasMonoidOps = mkMonoidOps _∙_ ε
+    ; hasInverse = record { _⁻¹ = _⁻¹ }
+    }
 
 -- 2 binary operations & 1 element
 --
 -- The name, HasNearSemiringOps, is only representative. Also includes other
 -- structures such as IsSemiringWithoutOne.
 record HasNearSemiringOps {a} (A : Set a) : Set a where
-  infixr 26 _+_
-  infixr 27 _*_
   field
-    _+_ : A → A → A
-    _*_ : A → A → A
-    0#  : A
+    hasPlusBinOp    : HasBinOp A
+    hasStarBinOp    : HasBinOp A
+    hasZeroIdentity : HasIdentity A
+
+  open HasBinOp hasPlusBinOp renaming (_∙_ to infixr 26 _+_) public
+  open HasBinOp hasStarBinOp renaming (_∙_ to infixr 27 _*_) public
+  open HasIdentity hasZeroIdentity renaming (ε to 0#) public
 
   instance
-    hasMonoidOpsFromNearSemiring : HasMonoidOps A
-    hasMonoidOpsFromNearSemiring = record { _∙_ = _+_ ; ε = 0# }
+    hasPlusZeroMonoidOpsFromNearSemiring : HasMonoidOps A
+    hasPlusZeroMonoidOpsFromNearSemiring = mkMonoidOps _+_ 0#
 
-    hasBinOpFromNearSemiring : HasBinOp A
-    hasBinOpFromNearSemiring = record { _∙_ = _*_ }
+-- smart constructor
+mkNearSemiringOps : {a : Level} {A : Set a} → Op₂ A → Op₂ A → A → HasNearSemiringOps A
+mkNearSemiringOps _+_ _*_ 0# =
+  record
+    { hasPlusBinOp = record { _∙_ = _+_ }
+    ; hasStarBinOp = record { _∙_ = _*_ }
+    ; hasZeroIdentity = record { ε = 0# }
+    }
 
 -- 2 binary operations & 2 elements
 --
 -- The name, HasSemiringOps, is only representative. Also includes other
 -- structures such as IsKleeneAlgebra and IsQuasiring
 record HasSemiringOps {a} (A : Set a) : Set a where
-  infixr 26 _+_
-  infixr 27 _*_
   field
-    _+_ : A → A → A
-    _*_ : A → A → A
-    0#  : A
-    1#  : A
+    hasNearSemiringOps : HasNearSemiringOps A
+    hasOneIdentity : HasIdentity A
+
+  open HasNearSemiringOps hasNearSemiringOps public
+  open HasIdentity hasOneIdentity renaming (ε to 1#) public
 
   instance
-    hasPlusZeroMonoidOpsFromNearSemiring : HasMonoidOps A
-    hasPlusZeroMonoidOpsFromNearSemiring = record { _∙_ = _+_ ; ε = 0# }
+    hasNearSemiringOpsFromSemiringOps : HasNearSemiringOps A
+    hasNearSemiringOpsFromSemiringOps = hasNearSemiringOps
 
-    hasStarOneMonoidOpsFromNearSemiring : HasMonoidOps A
-    hasStarOneMonoidOpsFromNearSemiring = record { _∙_ = _*_ ; ε = 1# }
+    hasOneIdentityFromSemiringOps : HasIdentity A
+    hasOneIdentityFromSemiringOps = hasOneIdentity
+
+    hasStarOneMonoidOpsFromSemiring : HasMonoidOps A
+    hasStarOneMonoidOpsFromSemiring = mkMonoidOps _*_ 1#
+
+mkSemiringOps : {a : Level} {A : Set a} → Op₂ A → Op₂ A → A → A → HasSemiringOps A
+mkSemiringOps _+_ _*_ 0# 1# =
+  record
+    { hasNearSemiringOps = mkNearSemiringOps _+_ _*_ 0#
+    ; hasOneIdentity = record { ε = 1# }
+    }
 
 record HasNearringOps {a} (A : Set a) : Set a where
-  infixr 26 _+_
-  infixr 27 _*_
-  infixl 21 _⁻¹
   field
-    _+_ : A → A → A
-    _*_ : A → A → A
-    _⁻¹ : A → A
-    0#  : A
-    1#  : A
+    hasSemiringOps : HasSemiringOps A
+    hasStarInverse : HasInverse A
+
+  open HasSemiringOps hasSemiringOps public
+  open HasInverse     hasStarInverse public
 
   instance
+    hasSemiringOpsFromNearringOps : HasSemiringOps A
+    hasSemiringOpsFromNearringOps = hasSemiringOps
+
+    hasStarInverseFromNearringOps : HasInverse A
+    hasStarInverseFromNearringOps = hasStarInverse
+
     hasGroupOpsFromNearringOps : HasGroupOps A
-    hasGroupOpsFromNearringOps = record { _∙_ = _*_ ; ε = 1# ; _⁻¹ = _⁻¹ }
+    hasGroupOpsFromNearringOps = mkGroupOps _*_ 1# _⁻¹
+
     hasMonoidOpsFromNearringOps : HasMonoidOps A
-    hasMonoidOpsFromNearringOps = record { _∙_ = _+_ ; ε = 0# }
+    hasMonoidOpsFromNearringOps = mkMonoidOps _+_ 0#
+
+mkNearringOps : {a : Level} {A : Set a} → Op₂ A → Op₂ A → A → A → Op₁ A → HasNearringOps A
+mkNearringOps _+_ _*_ 0# 1# _⁻¹ =
+  record
+    { hasSemiringOps = mkSemiringOps _+_ _*_ 0# 1#
+    ; hasStarInverse = record { _⁻¹ = _⁻¹ }
+    }
+
 
 -- 2 binary operations, 1 unary operation & 2 elements
 --
 -- The name, HasRingOps, is only representative. Also includes other
 -- structures such as IsNonAssociatiaveRing
 record HasRingOps {a} (A : Set a) : Set a where
-  infixr 26 _+_
-  infixr 27 _*_
   field
-    _+_ : A → A → A
-    _*_ : A → A → A
-    -_  : A → A
-    0#  : A
-    1#  : A
+    hasSemiringOps : HasSemiringOps A
+    hasPlusInverse : HasInverse A
+
+  open HasSemiringOps hasSemiringOps public
+  open HasInverse     hasPlusInverse renaming (_⁻¹ to -_) public
 
   instance
-    hasGroupOpsFromRingOps : HasGroupOps A
-    hasGroupOpsFromRingOps = record { _∙_ = _+_ ; ε = 0# ; _⁻¹ = -_ }
-    hasMonoidOpsFromRingOps : HasMonoidOps A
-    hasMonoidOpsFromRingOps = record { _∙_ = _*_ ; ε = 1# }
+    hasSemiringOpsFromNearringOps : HasSemiringOps A
+    hasSemiringOpsFromNearringOps = hasSemiringOps
+
+    hasStarInverseFromNearringOps : HasInverse A
+    hasStarInverseFromNearringOps = hasPlusInverse
+
+    hasGroupOpsFromNearringOps : HasGroupOps A
+    hasGroupOpsFromNearringOps = mkGroupOps _+_ 0# -_
+
+    hasMonoidOpsFromNearringOps : HasMonoidOps A
+    hasMonoidOpsFromNearringOps = mkMonoidOps _*_ 1#
+
+mkRingOps : {a : Level} {A : Set a} → Op₂ A → Op₂ A → Op₁ A → A → A → HasRingOps A
+mkRingOps _+_ _*_ -_ 0# 1#  =
+  record
+    { hasSemiringOps = mkSemiringOps _+_ _*_ 0# 1#
+    ; hasPlusInverse = record { _⁻¹ = -_ }
+    }
 
 -- 3 binary operations
 --
 -- The name, HasQuasigroupOps, is only representative. Also includes
 -- other structures such as IsLoop
 record HasQuasigroupOps {a} (A : Set a) : Set a where
-  infixr 29 _∙_
   field
-    _∙_  : A → A → A
-    _\\_ : A → A → A
-    _//_ : A → A → A
+    hasBinOp : HasBinOp A
+    hasLeftDivide : HasBinOp A
+    hasRightDivide : HasBinOp A
+
+  open HasBinOp hasBinOp public
+  open HasBinOp hasLeftDivide  renaming (_∙_ to _\\_) public
+  open HasBinOp hasRightDivide renaming (_∙_ to _//_) public
 
   instance
-    hasBinOpFromQuasigroupOps1 : HasBinOp A
-    hasBinOpFromQuasigroupOps1 = record { _∙_ = _∙_ }
-    hasBinOpFromQuasigroupOps2 : HasBinOp A
-    hasBinOpFromQuasigroupOps2 = record { _∙_ = _\\_ }
-    hasBinOpFromQuasigroupOps3 : HasBinOp A
-    hasBinOpFromQuasigroupOps3 = record { _∙_ = _//_ }
+    hasBinOpFromQuasiGroupOps : HasBinOp A
+    hasBinOpFromQuasiGroupOps = hasBinOp
+
+    hasLeftDivideFromQuasiGroupOps : HasBinOp A
+    hasLeftDivideFromQuasiGroupOps = hasLeftDivide
+
+    hasRightDivideFromQuasiGroupOps : HasBinOp A
+    hasRightDivideFromQuasiGroupOps = hasRightDivide
 
 record Equiv {a} (A : Set a) : Set (a ⊔ suc ℓ) where
   infixr 20 _≈_
@@ -323,7 +388,8 @@ record IsIdempotentMagmaHomomorphism
 record IsAlternativeMagmaHomomorphism
          ⦃ hasBinOpA : HasBinOp A ⦄
          ⦃ hasBinOpB : HasBinOp B ⦄
-         ⦃ isIdempotentMagmaB : FromHasBinOp IsAlternativeMagma hasBinOpB ⦄ : Set (a ⊔ ℓ) where
+         ⦃ isAlternativeMagmaB : FromHasBinOp IsAlternativeMagma hasBinOpB ⦄ : Set (a ⊔ ℓ) where
+
   open HasBinOp ⦃ … ⦄
   open IsAlternativeMagma ⦃ … ⦄
 
@@ -887,10 +953,82 @@ record IsIdempotentCommutativeMonoidHomomorphism
 -- Structures with 1 binary operation, 1 unary operation & 1 element
 ------------------------------------------------------------------------
 
-record IsInvertibleMagmaHomomorphism : Set (a ⊔ ℓ) where
-  -- FIXME: Not done
+record IsInvertibleMagmaHomomorphism
+         ⦃ hasGroupOpsA : HasGroupOps A ⦄
+         ⦃ hasGroupOpsB : HasGroupOps B ⦄
+         ⦃ isInvertibleMagmaB : FromGroupOps IsInvertibleMagma hasGroupOpsB ⦄ : Set (a ⊔ ℓ) where
 
-record IsInvertibleUnitalMagmaHomomorphism : Set (a ⊔ ℓ) where
+  open HasGroupOps ⦃ … ⦄
+  open IsInvertibleMagma ⦃ … ⦄
+
+  instance
+    _ : IsMagma {b} _≈_ _∙_
+    _ = isMagma
+
+  field
+    isMagmaHomomorphism : IsMagmaHomomorphism
+    ⁻¹-homo : ∀ x → ⟦ x ⁻¹ ⟧ ≈ ⟦ x ⟧ ⁻¹
+    ε-homo : ⟦ ε ⟧ ≈ ε
+
+  open IsMagmaHomomorphism isMagmaHomomorphism public
+
+  open import Relation.Binary.Reasoning.Setoid (setoid)
+
+  ε-⁻¹-inverseˡ : LeftInverse {a} _≈_ ε _⁻¹ _∙_
+  ε-⁻¹-inverseˡ x =
+    begin
+      ⟦ (x ⁻¹) ∙ x ⟧
+    ≈⟨ ∙-homo (x ⁻¹) x ⟩
+     ⟦ x ⁻¹ ⟧ ∙ ⟦ x ⟧
+    ≈⟨ ∙-cong (⁻¹-homo x) refl ⟩
+     (⟦ x ⟧ ⁻¹) ∙ ⟦ x ⟧
+    ≈⟨ inverseˡ ⟦ x ⟧ ⟩
+      ε
+    ≈⟨ sym ε-homo  ⟩
+      ⟦ ε ⟧
+    ∎
+
+  ε-⁻¹-inverseʳ : RightInverse {a} _≈_ ε _⁻¹ _∙_
+  ε-⁻¹-inverseʳ x =
+    begin
+      ⟦ x ∙ (x ⁻¹) ⟧
+    ≈⟨ ∙-homo x (x ⁻¹) ⟩
+     ⟦ x ⟧ ∙ ⟦ x ⁻¹ ⟧
+    ≈⟨ ∙-cong refl (⁻¹-homo x) ⟩
+     ⟦ x ⟧ ∙ (⟦ x ⟧ ⁻¹)
+    ≈⟨ inverseʳ ⟦ x ⟧ ⟩
+      ε
+    ≈⟨ sym ε-homo  ⟩
+      ⟦ ε ⟧
+    ∎
+
+  ε-⁻¹-inverse : Inverse _≈_ ε _⁻¹ _∙_
+  ε-⁻¹-inverse = ε-⁻¹-inverseˡ , ε-⁻¹-inverseʳ
+
+  ⁻¹-congruent : Congruent₁ {a} _≈_ _⁻¹
+  ⁻¹-congruent {x} {u} ⟦x⟧≈⟦u⟧ =
+    begin
+      ⟦ x ⁻¹ ⟧
+    ≈⟨ ⁻¹-homo x ⟩
+      (⟦ x ⟧ ⁻¹)
+    ≈⟨ ⁻¹-cong ⟦x⟧≈⟦u⟧ ⟩
+      (⟦ u ⟧ ⁻¹)
+    ≈⟨ sym (⁻¹-homo u) ⟩
+      ⟦ u ⁻¹ ⟧
+    ∎
+
+  isInvertableMagma-trans : IsInvertibleMagma {a} _≈_ _∙_ ε _⁻¹
+  isInvertableMagma-trans =
+    record
+      { isMagma = isMagma-trans
+      ; inverse = ε-⁻¹-inverse
+      ; ⁻¹-cong = ⁻¹-congruent
+      }
+
+record IsInvertibleUnitalMagma
+         ⦃ hasGroupOpsA : HasGroupOps A ⦄
+         ⦃ hasGroupOpsB : HasGroupOps B ⦄
+         ⦃ isInvertibleMagmaB : FromGroupOps IsInvertibleMagma hasGroupOpsB ⦄ : Set (a ⊔ ℓ) where
   -- FIXME: Not done
 
 record IsGroupHomomorphism
@@ -945,7 +1083,7 @@ record IsGroupHomomorphism
             ⟦ x ⟧ ∙ (⟦ x ⟧ ⁻¹)
           ≈⟨ inverseʳ ⟦ x ⟧ ⟩
              ε
-          ≈⟨  sym ε-homo ⟩
+          ≈⟨ sym ε-homo ⟩
             ⟦ ε ⟧
           ∎
 
